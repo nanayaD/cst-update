@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "releaseDate": "2026-06-01",
+  "downloadUrl": "https://github.com/nanayaD/cst-update/releases/latest",
+  "packageType": "portable",
+  "required": false,
+  "notes": [
+    "CST 초기 배포 정보 파일입니다.",
+    "업데이트 확인 기능은 새 버전 안내와 다운로드 페이지 열기만 수행합니다.",
+    "API 키와 개인 설정은 포함하지 않습니다."
+  ]
+}

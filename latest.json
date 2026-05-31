@@ -4,5 +4,10 @@
   "downloadUrl": "https://github.com/nanayaD/cst-update/releases/download/v0.2.0/CST-0.2.0-portable.exe",
   "packageType": "portable",
   "required": false,
-  "notes": "CST 첫 배포판입니다. 일본어 CoC 시나리오 번역기와 문맥교정기를 제공하고, OpenAI/Gemini 중 하나를 골라 본인 API 키로 사용합니다. 인앱 사용설명서에 API 키 발급 안내가 들어 있습니다."
+  "notes": [
+    "CST 첫 배포판입니다.",
+    "일본어 CoC 시나리오 번역기 + 문맥교정기를 제공합니다.",
+    "OpenAI / Gemini 중 하나를 골라 본인 API 키로 사용합니다.",
+    "인앱 사용설명서에 API 키 발급 안내가 들어 있습니다."
+  ]
 }

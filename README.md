@@ -14,15 +14,17 @@ Do not place API keys, passwords, private notes, or user data in these files.
    - `npm run check` passes.
    - Portable exe starts without stderr errors.
    - No `.env`, logs, tokens, credentials, or private user data are included in the distribution folder.
-   - Record the SHA256 hash of the final exe.
+   - Record the SHA256 hash of the final exe in the release notes or this README.
 3. Create a GitHub Release in this repository.
    - Tag format: `vX.Y.Z`.
    - Release title format: `CST X.Y.Z`.
    - Upload the portable exe file as a release asset.
 4. After the release asset is available, update `latest.json`.
    - `version`: released app version.
+   - `releaseDate`: release date in `YYYY-MM-DD` format.
    - `downloadUrl`: direct release asset URL, or the release page URL if the app should open the release page.
-   - `sha256`: SHA256 hash of the exact uploaded exe.
+   - `packageType`: `portable` or `installer`.
+   - `required`: `true` only for urgent updates.
    - `notes`: short Korean release notes suitable for users.
 5. Use `latest-test.json` first when testing update-check behavior.
 6. Only promote the same metadata to `latest.json` after the release page and download link have been checked.

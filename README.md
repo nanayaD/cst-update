@@ -49,10 +49,14 @@ https://raw.githubusercontent.com/nanayaD/cst-update/main/latest.json
 4. Update `latest.json` after the release asset is available.
 5. Check the raw `latest.json` URL and the download link before announcing the release.
 
-## CST 0.2.0 Notes
+## CST 0.2.0 Notes (initial release)
 
-- Added the built-in user manual and Help menu access.
-- Improved the sentence/context cleanup API controls and prose enhancement options.
-- Adjusted translator and context editor prompts for Korean readability.
-- Improved theme styling, preview sizing, and overwrite confirmation behavior.
-- Reduced raw provider response exposure in error logs.
+First public build of CST. Highlights:
+
+- Japanese -> Korean CoC scenario translator. Output is split into translation, CoC 7th edition notes, review items, and proper-noun / honorific notes.
+- Four translation modes (faithful, natural, handout-preserving, CoC 7e note-focused) and an auxiliary memo for names, honorifics, and proper-noun spellings.
+- Context editor for cleaning up Korean scenarios: reference swap (local), sentence/context cleanup with prose-enhancement levels, narrator-intrusion removal, and dialogue/narration split preview.
+- CoC auto-conversion for mythos names (Korean official 7e), TRPG session terms, and CoC sourcebook abbreviations; uncertain items are collected under review.
+- OpenAI / Gemini provider selection with per-provider key storage and live model refresh.
+- Built-in user manual with a step-by-step API key issuance guide.
+- Local-only error logs (API keys and source text are not recorded) and GitHub-based update check (no auto download or install).

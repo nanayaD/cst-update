@@ -14,8 +14,8 @@ Do not place API keys, passwords, private notes, or user data in this repository
 - Package type: `portable`
 - Download: https://github.com/nanayaD/cst-update/releases/download/v0.2.0/CST-0.2.0-portable.exe
 - Release page: https://github.com/nanayaD/cst-update/releases/tag/v0.2.0
-- Size: `72,734,432` bytes
-- SHA256: `2F67F2F3A8196D709607E4C27CCA2311322C6A7CFAD73C96C709A20E1BD36968`
+- Size: `72,734,013` bytes
+- SHA256: `8532168FBAABBC65029CFF52E9817AEF38F52925D4A80AC47E4605E7F13F507B`
 
 ## Update Metadata
 

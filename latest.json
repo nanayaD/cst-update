@@ -1,12 +1,14 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "releaseDate": "2026-06-01",
-  "downloadUrl": "https://github.com/nanayaD/cst-update/releases/latest",
+  "downloadUrl": "https://github.com/nanayaD/cst-update/releases/download/v0.2.0/CST-0.2.0-portable.exe",
   "packageType": "portable",
   "required": false,
   "notes": [
-    "CST 초기 배포 정보 파일입니다.",
-    "업데이트 확인 기능은 새 버전 안내와 다운로드 페이지 열기만 수행합니다.",
-    "API 키와 개인 설정은 포함하지 않습니다."
+    "내장 사용설명서를 추가하고 도움말 메뉴에서 바로 열 수 있게 했습니다.",
+    "문장·문맥 정리(API)의 버튼 구조와 서술 보강 옵션을 개선했습니다.",
+    "번역기와 교정기의 한국어 문맥 정리 품질을 조정했습니다.",
+    "테마, 미리보기 영역, 출력문 확인창 동작을 개선했습니다.",
+    "일부 오류 로그에서 원문 응답이 노출되지 않도록 정리했습니다."
   ]
 }

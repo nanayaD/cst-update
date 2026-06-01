@@ -37,6 +37,16 @@ The project is small and niche, but it serves a real workflow gap for Korean tab
 - Local error logs with API key masking.
 - GitHub-hosted update metadata via `latest.json`.
 
+## Screenshots
+
+### Translator
+
+![CST translator initial screen](docs/screenshots/cst-translator-initial.png)
+
+### Context Editor
+
+![CST context editor initial screen](docs/screenshots/cst-context-editor-initial.png)
+
 ## Privacy And Security
 
 CST does not run a project server. API requests are sent directly from the user's local app to the selected provider.

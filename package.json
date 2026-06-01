@@ -1,10 +1,19 @@
 {
   "name": "coc-jp-scenario-translator",
-  "version": "0.2.1",
+  "version": "0.2.0",
   "description": "Japanese Call of Cthulhu scenario partial translator with Korean output and CoC 7th edition notes.",
   "main": "src/main.js",
   "author": "nanayaD",
+  "license": "MIT",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nanayaD/cst-update.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nanayaD/cst-update/issues"
+  },
+  "homepage": "https://github.com/nanayaD/cst-update#readme",
   "scripts": {
     "start": "electron .",
     "check": "node --check src/main.js && node --check src/preload.js && node --check src/renderer.js && node --check src/manualContent.js && node --check src/translatorService.js && node --check src/editorService.js && node --check src/errorLogger.js && node --check src/updateService.js && node --check src/providers/openaiProvider.js && node --check src/providers/geminiProvider.js && node --check src/data/mythosGlossary.js && node --check src/data/trpgTerms.js && node --check src/data/cocBooks.js",

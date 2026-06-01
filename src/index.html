@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CST</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+<body data-theme="lilac">
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <svg class="brand-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="tile" gradientUnits="userSpaceOnUse" x1="60" y1="20" x2="452" y2="500"><stop offset="0" stop-color="#CBB8FB"></stop><stop offset="1" stop-color="#A6E5EE"></stop></linearGradient></defs><rect width="512" height="512" rx="114" fill="url(#tile)"></rect><rect x="196" y="92" width="60" height="132" rx="30" fill="#FFFFFF" transform="rotate(-5 226 224)"></rect><rect x="256" y="92" width="60" height="132" rx="30" fill="#FFFFFF" transform="rotate(5 286 224)"></rect><ellipse cx="256" cy="298" rx="132" ry="126" fill="#FFFFFF"></ellipse><circle cx="256" cy="298" r="74" fill="url(#tile)"></circle><path d="M250.57,263.84Q256.00,252.00 261.43,263.84L263.50,268.36Q268.93,280.20 281.87,281.71L286.81,282.28Q299.75,283.79 290.16,292.61L286.51,295.97Q276.92,304.80 279.49,317.57L280.47,322.44Q283.04,335.21 271.68,328.82L267.36,326.39Q256.00,320.00 244.64,326.39L240.32,328.82Q228.96,335.21 231.53,322.44L232.51,317.57Q235.08,304.80 225.49,295.97L221.84,292.61Q212.25,283.79 225.19,282.28L230.13,281.71Q243.07,280.20 248.50,268.36Z" fill="#FFFFFF"></path></svg>
+          <div class="brand-text">
+            <h1>CST</h1>
+            <p>시나리오 번역과 문맥 교정 도구</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <div class="font-control" aria-label="원문과 출력문 글자 크기">
+            <span>본문 크기</span>
+            <button id="fontSizeDown" class="font-btn" type="button" aria-label="본문 글자 작게">-</button>
+            <strong id="fontSizeValue">0pt</strong>
+            <button id="fontSizeUp" class="font-btn" type="button" aria-label="본문 글자 크게">+</button>
+          </div>
+          <div class="tool-switch" role="tablist" aria-label="작업 선택">
+            <button id="showTranslator" class="tool-switch-btn active" type="button" aria-selected="true">번역기</button>
+            <button id="showEditor" class="tool-switch-btn" type="button" aria-selected="false">문맥교정기</button>
+          </div>
+          <label class="theme-control">
+            <span>테마</span>
+            <select id="themeSelect">
+              <option value="lilac">라일락 민트</option>
+              <option value="sky">블루</option>
+              <option value="pink">핑크</option>
+              <option value="green">그린</option>
+              <option value="dark">다크 모드</option>
+            </select>
+          </label>
+          <button id="openManual" class="help-btn" type="button" title="사용설명서 열기" aria-label="사용설명서 열기">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.2 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.6 2.4-2.6 4"></path><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>
+            <span>사용설명서</span>
+          </button>
+        </div>
+      </header>
+
+      <section id="translatorTool" class="workspace tool-view active" data-screen-label="번역기">
+        <aside class="settings-panel collapse-group" id="settingsPanel" aria-label="설정">
+          <div class="settings-content">
+          <div class="settings-header">
+            <div class="settings-title">
+              <h2>설정</h2>
+              <div class="status-pill" id="saveStatus" role="status" aria-live="polite" hidden>설정 대기</div>
+            </div>
+            <button id="toggleSettings" class="settings-toggle" type="button" aria-expanded="true" title="설정 접기/펼치기" aria-controls="settingsBody">
+              <svg class="settings-arrow" viewBox="0 0 8 12" fill="none" aria-hidden="true"><path d="M6.5 1L1.5 6L6.5 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+          </div>
+
+          <div class="collapse-body" id="settingsBody">
+          <section class="mode-help" aria-live="polite">
+            <span>현재 번역 모드</span>
+            <h3 id="modeHelpTitle">원문 충실 번역</h3>
+            <p id="modeHelpText">원문의 문장 구조, 정보 순서, 조건문, 단서 표현을 최대한 보존하고 의역을 최소화합니다.</p>
+          </section>
+
+          <p class="group-label">API 연결</p>
+
+          <label class="field">
+            <span>API 제공사</span>
+            <select id="provider">
+              <option value="openai">OpenAI</option>
+              <option value="gemini">Gemini</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>API Key</span>
+            <input id="apiKey" type="password" autocomplete="off" placeholder="선택한 제공사의 API 키를 입력하세요." />
+          </label>
+
+          <label class="field">
+            <span>모델</span>
+            <div class="select-with-button">
+              <select id="model"></select>
+              <button id="refreshModels" class="secondary-btn icon-btn" type="button" title="모델 목록 새로고침" aria-label="모델 목록 새로고침">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><path d="M21 3v5h-5"></path></svg>
+              </button>
+            </div>
+            <small id="modelHint">API 키를 입력한 뒤 새로고침하면 사용 가능한 모델을 불러옵니다.</small>
+          </label>
+
+          <p class="group-label">번역 옵션</p>
+
+          <label class="field">
+            <span>1회 번역 글자수 제한</span>
+            <input id="charLimit" type="number" min="100" step="100" />
+          </label>
+
+          <label class="toggle-row">
+            <input id="includeCocNotes" type="checkbox" />
+            <span>CoC 7판 참고 메모 사용</span>
+          </label>
+
+          <div class="settings-actions">
+            <button id="saveSettings" class="primary-btn" type="button">설정 저장</button>
+            <button id="clearApiKeys" class="secondary-btn danger-btn" type="button">API 키 삭제</button>
+          </div>
+
+          <section class="log-tools" aria-label="오류 로그">
+            <h3>오류 로그</h3>
+            <p class="log-tools-desc">오류는 내 PC에만 기록됩니다. API 키와 입력 원문은 저장되지 않습니다.</p>
+            <div class="log-tools-buttons">
+              <button id="openLogFolder" class="secondary-btn small" type="button">폴더 열기</button>
+              <button id="copyLogs" class="secondary-btn small" type="button">복사</button>
+              <button id="clearLogs" class="secondary-btn small danger-btn" type="button">삭제</button>
+            </div>
+            <small id="logStatus" class="log-status" aria-live="polite"></small>
+          </section>
+
+          <section class="update-tools" aria-label="업데이트 확인">
+            <h3>업데이트</h3>
+            <p class="log-tools-desc">GitHub의 공개 버전 정보만 확인합니다. 자동 다운로드나 설치는 하지 않습니다.</p>
+            <div class="log-tools-buttons">
+              <button id="checkUpdates" class="secondary-btn small" type="button">업데이트 확인</button>
+            </div>
+            <small id="updateStatus" class="log-status" aria-live="polite"></small>
+          </section>
+          </div>
+          </div>
+        </aside>
+
+        <section class="main-panel" aria-label="번역 작업">
+          <h2 class="panel-title">번역 모드</h2>
+          <div class="mode-row" role="radiogroup" aria-label="번역 모드">
+            <label><input type="radio" name="mode" value="faithful" checked /><span class="m-name">원문 충실</span><span class="m-desc">구조·정보 순서 보존</span></label>
+            <label><input type="radio" name="mode" value="natural" /><span class="m-name">자연스러운 번역</span><span class="m-desc">읽기 쉽게 의역</span></label>
+            <label><input type="radio" name="mode" value="handout" /><span class="m-name">핸드아웃 보존</span><span class="m-desc">HO·비밀 정보 유지</span></label>
+            <label><input type="radio" name="mode" value="coc7" /><span class="m-name">CoC 7판 메모 중심</span><span class="m-desc">룰 용어 변환 강조</span></label>
+          </div>
+
+          <div class="translation-layout">
+            <div class="input-column">
+              <div class="editor-grid">
+                <section class="editor-block">
+                  <div class="section-heading">
+                    <h2>일본어 원문</h2>
+                    <span id="charCounter">현재 글자수: 0 / 3,000</span>
+                  </div>
+                  <textarea id="sourceText" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="번역할 일본어 시나리오 일부를 붙여넣으세요."></textarea>
+                  <p class="warning" id="limitWarning" hidden>입력 글자수가 제한을 초과했습니다. 문단을 나누어 번역하세요.</p>
+                </section>
+
+                <section class="editor-block">
+                  <div class="section-heading">
+                    <h2>보조 메모</h2>
+                  </div>
+                  <textarea id="contextMemo" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="등장인물 이름, KPC 설명, 관계, 고유명사 처리 방식, 호칭 유지 여부 등을 입력하세요."></textarea>
+                </section>
+              </div>
+
+              <div class="action-row">
+                <div class="action-buttons">
+                  <button id="translateBtn" class="primary-btn large" type="button">번역 실행</button>
+                  <button id="clearBtn" class="secondary-btn" type="button">입력 비우기</button>
+                  <button id="cancelBtn" class="secondary-btn danger-btn" type="button" disabled>번역 중지</button>
+                </div>
+                <span id="runStatus" class="run-status" role="status" aria-live="polite"></span>
+              </div>
+            </div>
+
+            <section class="result-panel">
+              <div class="section-heading">
+                <h2>결과</h2>
+                <button id="copyAll" class="secondary-btn small" type="button">
+                  <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg>
+                  전체 복사
+                </button>
+              </div>
+
+              <article class="result-section">
+                <div>
+                  <h3>번역문</h3>
+                  <button data-copy-target="translation" class="ghost-btn" type="button">복사</button>
+                </div>
+                <pre id="translation"></pre>
+              </article>
+
+              <article class="result-section">
+                <div>
+                  <h3>CoC 7판 참고 메모</h3>
+                  <button data-copy-target="cocNotes" class="ghost-btn" type="button">복사</button>
+                </div>
+                <pre id="cocNotes"></pre>
+              </article>
+
+              <article class="result-section">
+                <div>
+                  <h3>검토 필요 항목</h3>
+                  <button data-copy-target="reviewItems" class="ghost-btn" type="button">복사</button>
+                </div>
+                <pre id="reviewItems"></pre>
+              </article>
+
+              <article class="result-section">
+                <div>
+                  <h3>고유명사/호칭 메모</h3>
+                  <button data-copy-target="nameNotes" class="ghost-btn" type="button">복사</button>
+                </div>
+                <pre id="nameNotes"></pre>
+              </article>
+            </section>
+          </div>
+        </section>
+      </section>
+
+      <section id="editorTool" class="editor-workspace tool-view" aria-label="문맥문단 교정기" data-screen-label="문맥교정기">
+        <aside class="editor-settings-panel" aria-label="교정 설정">
+          <div class="settings-header">
+            <div class="settings-title">
+              <h2>설정</h2>
+              <div class="status-pill" id="editorSaveStatus" role="status" aria-live="polite" hidden>설정 대기</div>
+            </div>
+          </div>
+
+          <div class="collapse-group" id="editorApiGroup">
+            <button class="group-toggle" id="editorApiToggle" type="button" aria-expanded="true" aria-controls="editorApiBody">
+              <span class="group-label">API 연결</span>
+              <svg class="group-chevron" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+
+            <div class="collapse-body" id="editorApiBody">
+              <label class="field compact-field">
+                <span>API 제공사</span>
+                <select id="editorProvider">
+                  <option value="openai">OpenAI</option>
+                  <option value="gemini">Gemini</option>
+                </select>
+              </label>
+
+              <label class="field compact-field">
+                <span>API Key</span>
+                <input id="editorApiKey" type="password" autocomplete="off" placeholder="선택한 제공사의 API 키" />
+              </label>
+
+              <label class="field compact-field">
+                <span>모델</span>
+                <div class="select-with-button">
+                  <select id="editorModel"></select>
+                  <button id="editorRefreshModels" class="secondary-btn icon-btn" type="button" title="모델 목록 새로고침" aria-label="모델 목록 새로고침">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><path d="M21 3v5h-5"></path></svg>
+                  </button>
+                </div>
+              </label>
+
+              <div class="settings-actions">
+                <button id="editorSaveSettings" class="primary-btn compact-save" type="button">API 설정 저장</button>
+                <button id="editorClearApiKeys" class="secondary-btn danger-btn compact-save" type="button">API 키 삭제</button>
+              </div>
+              <div id="editorModelHint" class="editor-model-hint">번역기와 동일한 제공사·키·모델을 공유합니다. 키 입력 후 새로고침하면 모델을 불러옵니다.</div>
+            </div>
+          </div>
+
+          <div class="tools-legend">
+            <span class="legend-item"><span class="legend-swatch ai"></span>채워진 버튼 = AI 호출 (시간·비용 발생)</span>
+            <span class="legend-item"><span class="legend-swatch local"></span>외곽선 버튼 = 즉시 처리 (로컬, API 미사용)</span>
+          </div>
+
+          <section class="tool-section collapse-group">
+            <button class="tool-toggle" type="button" aria-expanded="true">
+              <div class="tool-section-head">
+                <h2>① 지칭 변환 설정</h2>
+                <p class="hint">바꿀 단어를 직접 고르고, 원하는 지칭으로 정리합니다. 적용은 로컬에서도 즉시 처리돼요.</p>
+              </div>
+              <svg class="group-chevron" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <div class="collapse-body">
+              <div class="target-row">
+                <label class="field inline-field">
+                  <span>찾을 지칭</span>
+                  <input id="editorTargetTerms" type="text" value="탐사자님, 탐사자, PC, 플레이어" placeholder="탐사자, PC, KPC" />
+                </label>
+                <label class="field inline-field">
+                  <span>바꿀 지칭</span>
+                  <input id="editorTargetName" type="text" value="당신" placeholder="당신 / PC 이름 / 형사" />
+                </label>
+                <label class="toggle-row inline-toggle">
+                  <input id="editorTargetDialogue" type="checkbox" />
+                  <span>대사 안 지칭도 변경</span>
+                </label>
+                <label class="toggle-row inline-toggle">
+                  <input id="editorTargetOmit" type="checkbox" checked />
+                  <span>반복 지칭 생략 허용</span>
+                </label>
+                <button id="editorApplyTarget" class="secondary-btn" type="button">호칭만 적용</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="tool-section collapse-group">
+            <button class="tool-toggle" type="button" aria-expanded="true">
+              <div class="tool-section-head">
+                <h2>② 문장·문맥 정리 (API)</h2>
+                <p class="hint">AI가 문장을 다듬습니다. 정리 방식을 하나 고르세요.</p>
+              </div>
+              <svg class="group-chevron" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <div class="collapse-body">
+              <span class="subgroup-label">정리 대상</span>
+              <div class="editor-button-row">
+                <button class="primary-btn" data-editor-run="gm" type="button" data-tooltip="전체 원문을 한국어 GM 지문으로 정리합니다. 서술은 자연스럽게 다듬고, 대사는 보수적으로만 정리합니다." title="전체 원문을 한국어 GM 지문으로 정리합니다. 서술은 자연스럽게 다듬고, 대사는 보수적으로만 정리합니다.">GM 지문</button>
+                <button class="primary-btn" data-editor-run="dialogue_keep" type="button" data-tooltip="대사는 API에 보내지 않고 원문 그대로 유지합니다. 서술 블록만 선택한 보강 강도로 정리합니다." title="대사는 API에 보내지 않고 원문 그대로 유지합니다. 서술 블록만 선택한 보강 강도로 정리합니다.">대사 유지</button>
+              </div>
+              <span class="subgroup-label">서술 보강</span>
+              <div class="enhance-segment" role="radiogroup" aria-label="서술 보강 강도">
+                <label><input type="radio" name="editorEnhanceLevel" value="off" checked /><span>없음</span></label>
+                <label><input type="radio" name="editorEnhanceLevel" value="normal" /><span>보통</span></label>
+                <label><input type="radio" name="editorEnhanceLevel" value="strong" /><span>강하게</span></label>
+              </div>
+              <p class="enhance-help">없음은 최소 정리, 보통은 흐름 보강, 강하게는 비문까지 적극 교정합니다.</p>
+              <span class="subgroup-label">별도 기능</span>
+              <div class="editor-button-row">
+                <button class="primary-btn" data-editor-run="remove_narrator" type="button" data-tooltip="작가가 독자·플레이어에게 직접 말하는 표현, 수사적 질문, 추임새를 제거하고 GM 지문형으로 바꿉니다." title="작가가 독자·플레이어에게 직접 말하는 표현, 수사적 질문, 추임새를 제거하고 GM 지문형으로 바꿉니다.">화자 개입 제거</button>
+                <button id="editorCancelBtn" class="secondary-btn danger-btn" type="button" disabled>교정 중지</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="tool-section collapse-group">
+            <button class="tool-toggle" type="button" aria-expanded="true">
+              <div class="tool-section-head">
+                <h2>③ 형식 정리 (즉시)</h2>
+                <p class="hint">AI 없이 즉시 처리되는 정리·추출 기능입니다.</p>
+              </div>
+              <svg class="group-chevron" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <div class="collapse-body">
+              <div class="editor-button-row">
+                <button id="editorLinebreak" class="secondary-btn" type="button">줄바꿈만</button>
+                <button class="secondary-btn" data-editor-split-action="split" type="button">대사/서술 분리</button>
+                <button class="secondary-btn" data-editor-split-action="dialogue_only" type="button">대사만 추출</button>
+                <button class="secondary-btn" data-editor-split-action="narration_only" type="button">서술만 추출</button>
+                <button id="editorSendTranslation" class="secondary-btn" type="button">번역문 가져오기</button>
+              </div>
+            </div>
+          </section>
+
+          <div id="editorStatus" class="run-status editor-status" role="status" aria-live="polite"></div>
+        </aside>
+
+        <section class="editor-main-panel" aria-label="교정 작업">
+          <div class="editor-io-grid">
+            <section class="editor-block">
+              <div class="section-heading">
+                <h2>교정 원문</h2>
+                <button id="editorClearSource" class="secondary-btn small" type="button">원문 비우기</button>
+              </div>
+              <textarea id="editorSourceText" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="번역 결과나 한국어 시나리오 문장을 붙여넣으세요."></textarea>
+            </section>
+
+            <section class="editor-block">
+              <div class="section-heading">
+                <h2>출력문</h2>
+                <div class="section-actions">
+                  <button id="editorCopyOutput" class="secondary-btn small" type="button">전체 복사</button>
+                  <button id="editorClearOutput" class="secondary-btn small" type="button">출력문 비우기</button>
+                </div>
+              </div>
+              <textarea id="editorOutputText" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="교정 결과가 여기에 표시됩니다. 직접 수정할 수도 있습니다."></textarea>
+            </section>
+          </div>
+
+          <section class="preview-block">
+            <div class="section-heading">
+              <h2>미리보기</h2>
+              <div class="section-actions">
+                <span id="editorPreviewCount">0개 블록</span>
+                <button id="editorCopyPreviewAll" class="secondary-btn small" type="button">전체 복사</button>
+              </div>
+            </div>
+            <div id="editorPreview" class="editor-preview"></div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <div id="copyToast" class="toast" role="status" aria-live="polite">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+      <span id="copyToastText">복사되었습니다</span>
+    </div>
+
+    <div id="confirmModal" class="modal-backdrop confirm-backdrop" hidden>
+      <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+        <div class="modal-head">
+          <div>
+            <span>확인</span>
+            <h2 id="confirmModalTitle">출력문 바꾸기</h2>
+          </div>
+        </div>
+        <div class="modal-body">
+          <p id="confirmModalMessage" class="confirm-message">현재 출력문을 새 결과로 바꿀까요?</p>
+        </div>
+        <div class="modal-actions">
+          <button id="confirmCancel" class="secondary-btn" type="button">취소</button>
+          <button id="confirmOk" class="primary-btn" type="button">바꾸기</button>
+        </div>
+      </section>
+    </div>
+
+    <div id="manualModal" class="modal-backdrop" hidden>
+      <section class="manual-modal" role="dialog" aria-modal="true" aria-labelledby="manualModalTitle">
+        <div class="modal-head">
+          <div>
+            <span class="manual-badge">도움말</span>
+            <h2 id="manualModalTitle">사용설명서</h2>
+          </div>
+          <button id="closeManual" class="modal-close" type="button" aria-label="사용설명서 닫기">×</button>
+        </div>
+        <div class="manual-body">
+          <nav id="manualToc" class="manual-toc" aria-label="목차"></nav>
+          <article id="manualContent" class="manual-content" tabindex="0"></article>
+        </div>
+      </section>
+    </div>
+
+    <div id="updateModal" class="modal-backdrop" hidden>
+      <section class="update-modal" role="dialog" aria-modal="true" aria-labelledby="updateModalTitle">
+        <div class="modal-head">
+          <div>
+            <span id="updateModalBadge">업데이트</span>
+            <h2 id="updateModalTitle">새 버전이 있습니다</h2>
+          </div>
+          <button id="closeUpdateModal" class="modal-close" type="button" aria-label="업데이트 안내 닫기">×</button>
+        </div>
+        <div class="modal-body">
+          <dl class="version-list">
+            <div><dt>현재 버전</dt><dd id="currentVersionText">-</dd></div>
+            <div><dt>최신 버전</dt><dd id="latestVersionText">-</dd></div>
+            <div><dt>배포일</dt><dd id="releaseDateText">-</dd></div>
+          </dl>
+          <p id="updateGuideText" class="update-guide"></p>
+          <p id="migrationMessageText" class="update-migration" hidden></p>
+          <ul id="updateNotesList" class="update-notes"></ul>
+        </div>
+        <div class="modal-actions">
+          <button id="dismissUpdateModal" class="secondary-btn" type="button">나중에</button>
+          <button id="openUpdateDownload" class="primary-btn" type="button">다운로드 페이지 열기</button>
+        </div>
+      </section>
+    </div>
+
+    <script src="./manualContent.js"></script>
+    <script src="./renderer.js"></script>
+  </body>
+</html>

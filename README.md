@@ -1,11 +1,30 @@
-# CST Update Metadata
+# CST
 
-This repository hosts public update metadata and release files for CST.
+CST is a Windows Electron desktop app that helps translate and clean up Japanese Call of Cthulhu scenario text into Korean.
 
+This repository now hosts both the app source and the public update metadata used by released builds.
+
+- `src/`: Electron app source.
+- `assets/`: app icons.
 - `latest.json`: production update metadata used by the CST app.
 - GitHub Releases: portable Windows executable downloads.
 
 Do not place API keys, passwords, private notes, or user data in this repository.
+
+## Development
+
+```text
+npm install
+npm run check
+npm start
+```
+
+Build commands:
+
+```text
+npm run build:portable
+npm run build:installer
+```
 
 ## Current Release
 
@@ -16,6 +35,12 @@ Do not place API keys, passwords, private notes, or user data in this repository
 - Release page: https://github.com/nanayaD/cst-update/releases/tag/v0.2.0
 - Size: `72,734,013` bytes
 - SHA256: `8532168FBAABBC65029CFF52E9817AEF38F52925D4A80AC47E4605E7F13F507B`
+
+## Source Status
+
+- `package.json` version: `0.2.1`
+- The 0.2.1 maintenance source is included in this repository.
+- `latest.json` should stay on the latest published release until the matching GitHub Release asset exists.
 
 ## Update Metadata
 
@@ -49,7 +74,15 @@ https://raw.githubusercontent.com/nanayaD/cst-update/main/latest.json
 4. Update `latest.json` after the release asset is available.
 5. Check the raw `latest.json` URL and the download link before announcing the release.
 
-## CST 0.2.0 Notes (initial release)
+## CST 0.2.1 Notes
+
+Maintenance release:
+
+- Renamed the settings/logs folder to `CST` (previously `coc-jp-scenario-translator`).
+- Existing 0.2.0 settings and API keys are copied automatically on first 0.2.1 launch.
+- No translation or editor feature changes.
+
+## CST 0.2.0 Notes
 
 First public build of CST. Highlights:
 

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+out/
+cst-update-draft/
+*.log
+.env
+.env.*
+!.env.example

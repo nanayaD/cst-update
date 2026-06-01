@@ -1,0 +1,1753 @@
+<!doctype html>
+<!--
+  CST UI 개선안 (단일 파일 스냅샷)
+  - 핸드오프 파일과 동일한 형식: Electron + 바닐라 HTML/CSS/JS, styles.css 인라인.
+  - 모든 요소 ID와 DOM 중첩 구조는 원본과 1:1 유지 (renderer.js 호환).
+  - 색은 전부 CSS 변수(:root + body[data-theme="..."]). 기본(블루)/핑크/그린/다크 + 신규 '라일락 민트'(lilac).
+  - 모델 옵션/결과 텍스트/예시 문구는 데모용 더미입니다(실제 앱은 renderer.js가 채움).
+  - 하단 <script>는 탭/테마/설정접기만 동작시키는 데모 스텁입니다.
+-->
+<html lang="ko" data-screen-label="CST">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CST — UI 개선안</title>
+    <style>
+/* =========================================================
+   테마 토큰 — :root = 블루(기본). 색은 전부 변수로 관리.
+   ========================================================= */
+:root {
+  /* 블루 (기본) */
+  --bg: #f3f8fd;
+  --wash-a: rgba(122,172,246,0.20);
+  --wash-b: rgba(150,224,236,0.18);
+  --panel: rgba(255,255,255,0.74);
+  --panel-soft: rgba(255,255,255,0.50);
+  --text: #28384a;
+  --muted: #69788a;
+  --line: rgba(120,160,205,0.22);
+  --accent: #e7f1fb;
+  --accent-strong: #d7e7fa;
+  --accent-text: #2b4a6b;
+  --accent-border: #cfe0f6;
+  --accent-grad: linear-gradient(135deg, #9fc6f6, #a6e5ee);
+  --on-accent: #1f3550;
+  --control: #6ba6ec;
+  --focus-ring: rgba(120,170,235,0.28);
+  --danger: #c2455b;
+  --shadow: 0 16px 38px rgba(60,110,160,0.13);
+  --shadow-sm: 0 4px 16px rgba(60,110,160,0.10);
+  --input-bg: rgba(255,255,255,0.72);
+  --button-bg: rgba(255,255,255,0.55);
+  --pre-bg: rgba(255,255,255,0.58);
+
+  --radius-lg: 20px;
+  --radius-md: 12px;
+  --radius-sm: 9px;
+}
+
+/* 라일락 민트 (신규 · #CBB8FB / #A6E5EE) */
+body[data-theme="lilac"] {
+  --bg: #f7f4ff;
+  --wash-a: rgba(203,184,251,0.34);
+  --wash-b: rgba(166,229,238,0.30);
+  --panel: rgba(255,255,255,0.72);
+  --panel-soft: rgba(255,255,255,0.50);
+  --text: #3c3357;
+  --muted: #7c7397;
+  --line: rgba(170,150,230,0.26);
+  --accent: #ece4fe;
+  --accent-strong: #e0d4fc;
+  --accent-text: #4a3d72;
+  --accent-border: #dccdfb;
+  --accent-grad: linear-gradient(135deg, #cbb8fb, #a6e5ee);
+  --on-accent: #322a52;
+  --control: #a98ef0;
+  --focus-ring: rgba(170,140,250,0.30);
+  --danger: #c2456b;
+  --shadow: 0 18px 40px rgba(130,95,210,0.16);
+  --shadow-sm: 0 4px 18px rgba(130,95,210,0.12);
+  --input-bg: rgba(255,255,255,0.70);
+  --button-bg: rgba(255,255,255,0.52);
+  --pre-bg: rgba(255,255,255,0.56);
+}
+
+body[data-theme="pink"] {
+  --bg: #fdf5f8;
+  --wash-a: rgba(250,180,210,0.28);
+  --wash-b: rgba(255,206,182,0.20);
+  --panel: rgba(255,255,255,0.74);
+  --panel-soft: rgba(255,255,255,0.50);
+  --text: #5b3a4b;
+  --muted: #9a7384;
+  --line: rgba(230,150,185,0.24);
+  --accent: #fde3ee;
+  --accent-strong: #f8d2e3;
+  --accent-text: #7a3f5b;
+  --accent-border: #f5c2d8;
+  --accent-grad: linear-gradient(135deg, #f7b8d4, #ffc9b0);
+  --on-accent: #6a2f4a;
+  --control: #ec86b0;
+  --focus-ring: rgba(242,160,195,0.28);
+  --danger: #c83060;
+  --shadow: 0 18px 40px rgba(190,90,135,0.14);
+  --shadow-sm: 0 4px 18px rgba(190,90,135,0.10);
+  --input-bg: rgba(255,255,255,0.72);
+  --button-bg: rgba(255,255,255,0.50);
+  --pre-bg: rgba(255,255,255,0.56);
+}
+
+body[data-theme="green"] {
+  --bg: #f3faf2;
+  --wash-a: rgba(160,225,180,0.26);
+  --wash-b: rgba(200,230,150,0.18);
+  --panel: rgba(255,255,255,0.74);
+  --panel-soft: rgba(255,255,255,0.50);
+  --text: #33503f;
+  --muted: #6e8576;
+  --line: rgba(120,190,140,0.24);
+  --accent: #e2f3df;
+  --accent-strong: #d2ead0;
+  --accent-text: #3c6049;
+  --accent-border: #cfe6cb;
+  --accent-grad: linear-gradient(135deg, #a8e3b6, #a6e5ee);
+  --on-accent: #2c5238;
+  --control: #74c389;
+  --focus-ring: rgba(150,210,170,0.30);
+  --danger: #bb5050;
+  --shadow: 0 18px 40px rgba(90,150,110,0.14);
+  --shadow-sm: 0 4px 18px rgba(90,150,110,0.10);
+  --input-bg: rgba(255,255,255,0.72);
+  --button-bg: rgba(255,255,255,0.50);
+  --pre-bg: rgba(255,255,255,0.56);
+}
+
+body[data-theme="dark"] {
+  --bg: #15151b;
+  --wash-a: rgba(140,120,210,0.20);
+  --wash-b: rgba(110,180,195,0.16);
+  --panel: rgba(40,40,52,0.62);
+  --panel-soft: rgba(52,52,66,0.46);
+  --text: #ecebf2;
+  --muted: #a9a6bd;
+  --line: rgba(255,255,255,0.11);
+  --accent: rgba(125,105,185,0.28);
+  --accent-strong: rgba(145,122,205,0.40);
+  --accent-text: #efeafc;
+  --accent-border: rgba(160,140,220,0.40);
+  --accent-grad: linear-gradient(135deg, #8b78d8, #5fb6c4);
+  --on-accent: #ffffff;
+  --control: #9a83e0;
+  --focus-ring: rgba(150,130,220,0.35);
+  --danger: #e58aa0;
+  --shadow: 0 20px 46px rgba(0,0,0,0.50);
+  --shadow-sm: 0 6px 22px rgba(0,0,0,0.40);
+  --input-bg: rgba(255,255,255,0.05);
+  --button-bg: rgba(255,255,255,0.06);
+  --pre-bg: rgba(255,255,255,0.04);
+}
+
+/* =========================================================
+   기본
+   ========================================================= */
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", "Malgun Gothic", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 은은한 그라데이션 워시 (테마별 색) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(58% 52% at 10% 4%, var(--wash-a), transparent 62%),
+    radial-gradient(54% 50% at 94% 98%, var(--wash-b), transparent 62%);
+}
+
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+::selection { background: var(--accent-strong); }
+
+/* 폼 컨트롤 틴트 */
+input[type="checkbox"], input[type="radio"] { accent-color: var(--control); width: 17px; height: 17px; }
+
+.app-shell {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding: 22px 26px 30px;
+  max-width: 1680px;
+  margin: 0 auto;
+}
+
+/* =========================================================
+   Topbar
+   ========================================================= */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  padding: 12px 16px 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  backdrop-filter: blur(16px) saturate(1.3);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.brand-logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  flex: none;
+  box-shadow: var(--shadow-sm);
+  display: block;
+}
+
+.brand-text h1 {
+  margin: 0;
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.brand-text p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.tool-switch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-soft);
+}
+
+.tool-switch-btn {
+  min-height: 36px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+  transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.tool-switch-btn:hover { color: var(--text); }
+
+.tool-switch-btn.active {
+  background: var(--accent-grad);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-control {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.theme-control span {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.theme-control select {
+  height: 40px;
+  min-width: 152px;
+  padding: 0 34px 0 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--input-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%238a8a9a' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center;
+  color: var(--text);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.theme-control select:focus {
+  border-color: var(--control);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.topbar h1 { margin: 0; }
+
+/* =========================================================
+   레이아웃
+   ========================================================= */
+.workspace {
+  display: grid;
+  grid-template-columns: var(--settings-width, 340px) minmax(0, 1fr);
+  gap: 20px;
+  transition: grid-template-columns 180ms ease;
+}
+
+.tool-view { display: none; }
+.tool-view.active { display: grid; }
+
+.workspace.settings-collapsed { --settings-width: 52px; }
+
+/* 글래스 패널 공통 */
+.settings-panel,
+.main-panel,
+.editor-settings-panel,
+.editor-main-panel,
+.editor-io-grid > section,
+.editor-main-panel > .preview-block {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  backdrop-filter: blur(16px) saturate(1.3);
+}
+
+/* =========================================================
+   설정 패널
+   ========================================================= */
+.settings-panel {
+  align-self: start;
+  min-width: 0;
+  padding: 20px;
+  position: relative;
+  overflow: visible;
+}
+
+.settings-content { min-width: 300px; }
+
+.settings-collapsed .settings-panel {
+  min-height: 54px;
+  padding: 10px 8px;
+}
+
+.settings-collapsed .settings-content { min-width: 0; }
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.settings-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.settings-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--button-bg);
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1;
+  padding: 0;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.settings-toggle:hover { color: var(--text); background: var(--accent); }
+
+.settings-collapsed .settings-toggle {
+  position: absolute;
+  top: 12px;
+  left: 11px;
+}
+
+.settings-collapsed .settings-header h2,
+.settings-collapsed .settings-content > :not(.settings-header) { display: none; }
+
+/* 그룹 라벨 (직관성 보강) */
+.group-label {
+  margin: 22px 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.85;
+}
+
+.mode-help {
+  margin-top: 14px;
+  padding: 15px 16px;
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  position: relative;
+}
+
+.mode-help span {
+  display: block;
+  color: var(--accent-text);
+  opacity: 0.85;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  margin-bottom: 5px;
+}
+
+.mode-help h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--accent-text);
+}
+
+.mode-help p {
+  margin: 8px 0 0;
+  color: var(--accent-text);
+  opacity: 0.92;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.field > span,
+.toggle-row span { color: var(--muted); font-size: 13.5px; font-weight: 600; }
+
+.field input,
+.field select,
+textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--input-bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.select-with-button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  gap: 8px;
+}
+
+.field input,
+.field select { height: 42px; padding: 0 13px; }
+
+.field select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%238a8a9a' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+}
+
+.field small {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.field input:focus,
+.field select:focus,
+textarea:focus {
+  border-color: var(--control);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--panel-soft);
+  cursor: pointer;
+}
+
+.toggle-row span { font-size: 14px; }
+
+.settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.status-pill {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-soft);
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.log-tools {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.log-tools h3 { margin: 0 0 6px; font-size: 14px; font-weight: 700; }
+
+.log-tools-desc {
+  margin: 0 0 11px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.log-tools-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.log-status {
+  display: block;
+  margin-top: 9px;
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 16px;
+}
+
+.log-status.is-error { color: var(--danger); }
+
+/* =========================================================
+   메인 패널 (번역기)
+   ========================================================= */
+.main-panel { padding: 22px; }
+
+.translation-layout { min-width: 0; }
+.input-column { min-width: 0; }
+
+.panel-title {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* 모드 선택 — 카드형 */
+.mode-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.mode-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 64px;
+  justify-content: center;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--panel-soft);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
+}
+
+.mode-row label:hover { border-color: var(--accent-border); }
+
+.mode-row label input { position: absolute; opacity: 0; pointer-events: none; }
+
+.mode-row .m-name { font-size: 14px; font-weight: 700; }
+.mode-row .m-desc { font-size: 11.5px; color: var(--muted); line-height: 1.35; }
+
+.mode-row label:has(input:checked) {
+  border-color: transparent;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-border) inset, var(--shadow-sm);
+}
+
+.mode-row label:has(input:checked) .m-name { color: var(--accent-text); }
+
+.editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+  gap: 16px;
+}
+
+.editor-block { min-width: 0; }
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.section-heading h2 { margin: 0; font-size: 15px; font-weight: 700; }
+
+.section-heading > span {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+textarea {
+  min-height: 240px;
+  resize: vertical;
+  padding: 14px;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.warning {
+  min-height: 20px;
+  margin: 8px 0 0;
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.action-row {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr);
+  align-items: center;
+  gap: 16px;
+  min-height: 52px;
+  margin: 18px 0;
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* =========================================================
+   버튼
+   ========================================================= */
+.primary-btn,
+.secondary-btn,
+.ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: transform 120ms ease, box-shadow 140ms ease, background 140ms ease, opacity 140ms ease;
+}
+
+.primary-btn {
+  min-height: 44px;
+  padding: 0 18px;
+  background: var(--accent-grad);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.primary-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+.primary-btn:active { transform: translateY(0); }
+
+.primary-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
+.primary-btn.large { min-width: 150px; font-size: 15px; }
+
+.secondary-btn {
+  min-height: 44px;
+  padding: 0 15px;
+  border-color: var(--line);
+  background: var(--button-bg);
+  color: var(--text);
+}
+
+.secondary-btn:hover { background: var(--accent); border-color: var(--accent-border); }
+
+.danger-btn {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+}
+
+.danger-btn:hover {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+}
+
+.danger-btn:disabled { cursor: not-allowed; opacity: 0.45; }
+
+.icon-btn {
+  min-width: 44px;
+  padding: 0;
+}
+
+.icon-btn svg { width: 18px; height: 18px; }
+
+.secondary-btn.small,
+.ghost-btn {
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+}
+
+.ghost-btn {
+  border-color: var(--line);
+  background: var(--panel-soft);
+  color: var(--muted);
+}
+
+.ghost-btn:hover { background: var(--accent); color: var(--accent-text); }
+
+.btn-ico { width: 15px; height: 15px; flex: none; }
+
+.run-status {
+  color: var(--muted);
+  min-height: 20px;
+  text-align: right;
+  word-break: keep-all;
+  font-size: 13.5px;
+}
+
+/* =========================================================
+   결과
+   ========================================================= */
+.result-panel {
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
+
+.result-section {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--panel-soft);
+}
+
+.result-section > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.result-section h3 { margin: 0; font-size: 14.5px; font-weight: 700; }
+
+pre {
+  min-height: 70px;
+  max-height: 260px;
+  margin: 0;
+  overflow: auto;
+  padding: 14px;
+  background: var(--pre-bg);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.6;
+  font-size: 13.5px;
+  font-family: "Segoe UI", "Malgun Gothic", system-ui, sans-serif;
+}
+
+/* =========================================================
+   문맥교정기 — 번역기와 동일한 좌(설정)/우(작업) 2단 구조
+   ========================================================= */
+.editor-workspace {
+  grid-template-columns: var(--editor-settings-width, 380px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+/* 좌측: 설정 패널 (좁음) */
+.editor-settings-panel {
+  align-self: start;
+  min-width: 0;
+  padding: 20px;
+  display: grid;
+  gap: 0;
+}
+
+.editor-settings-panel .field,
+.editor-settings-panel .settings-actions { margin-top: 14px; }
+
+.compact-field { margin-top: 0; }
+.compact-save { width: 100%; }
+
+.editor-model-hint {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/* 접을 수 있는 그룹 (API 연결) */
+.group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px 4px;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  transition: background 140ms ease;
+}
+
+.group-toggle:hover { background: var(--accent); }
+.group-toggle .group-label { margin: 0; }
+
+.group-chevron {
+  width: 12px;
+  height: 8px;
+  flex: none;
+  color: var(--muted);
+  transition: transform 220ms ease;
+}
+
+.collapse-group.collapsed .group-chevron { transform: rotate(-90deg); }
+
+.collapse-body {
+  overflow: hidden;
+  max-height: 640px;
+  opacity: 1;
+  transition: max-height 260ms ease, opacity 180ms ease, margin-top 260ms ease;
+}
+
+.collapse-group.collapsed .collapse-body {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 번역기 좌측바: 내용이 길어 펼침 상한을 넉넉히 */
+#settingsBody { max-height: 1600px; }
+#settingsPanel.collapsed #settingsBody { display: none; }
+#settingsPanel.collapsed .settings-header { margin-bottom: 0; }
+
+/* 접기 화살표: 펼침=‹(왼쪽으로 접기), 접힘=›(오른쪽으로 펼치기) */
+.settings-arrow {
+  width: 9px;
+  height: 13px;
+  color: inherit;
+  transition: transform 220ms ease;
+}
+#settingsPanel.collapsed .settings-arrow { transform: rotate(180deg); }
+
+/* 번역기 좌측바 접힘: 오른쪽→왼쪽으로 폭이 줄며 닫히고, 얇은 세로 레일이 됨 → 출력 영역이 넓어짐 */
+.workspace:has(#settingsPanel.collapsed) { --settings-width: 50px; }
+
+#settingsPanel.collapsed {
+  padding: 16px 0;
+  overflow: hidden;
+  align-self: stretch;
+  background: linear-gradient(var(--accent), var(--panel));
+  cursor: pointer;
+}
+
+#settingsPanel.collapsed .settings-toggle {
+  background: var(--accent-strong);
+  border-color: var(--accent-border);
+  color: var(--accent-text);
+  width: 34px;
+  height: 34px;
+}
+
+#settingsPanel.collapsed .settings-content {
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+#settingsPanel.collapsed .settings-header {
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  margin: 0;
+}
+
+#settingsPanel.collapsed .settings-header h2 {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+}
+
+/* 범례: AI 호출 vs 즉시(로컬) 구분 안내 */
+.tools-legend {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--panel-soft);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.legend-item { display: inline-flex; align-items: center; gap: 8px; }
+
+.legend-swatch {
+  width: 22px;
+  height: 15px;
+  border-radius: 5px;
+  flex: none;
+}
+
+.legend-swatch.ai { background: var(--accent-grad); }
+.legend-swatch.local { background: var(--button-bg); border: 1px solid var(--line); }
+
+.tool-section {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--panel-soft);
+}
+
+.tool-section.collapse-group { gap: 0; }
+
+.tool-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: 0;
+  text-align: left;
+}
+
+.tool-toggle .tool-section-head { flex: 1; min-width: 0; }
+.tool-toggle .group-chevron { align-self: center; }
+
+.tool-section .collapse-body {
+  display: grid;
+  gap: 10px;
+  margin-top: 11px;
+}
+
+.tool-section.collapsed .collapse-body { margin-top: 0; }
+
+.tool-section-head { display: grid; gap: 3px; }
+
+.tool-section-head h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.tool-section-head .hint {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.subgroup-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.85;
+  margin-top: 3px;
+}
+
+/* 좁은 사이드바: 버튼은 세로로 꽉 차게 쌓아 가독성 확보 */
+.target-row,
+.editor-button-row {
+  display: grid;
+  gap: 8px;
+}
+
+.editor-button-row .primary-btn,
+.editor-button-row .secondary-btn { width: 100%; }
+
+.inline-field { margin-top: 0; }
+.inline-toggle { min-height: 42px; margin: 0; }
+
+.editor-status {
+  text-align: left;
+  margin-top: 14px;
+  min-height: 18px;
+  font-weight: 600;
+}
+
+/* 우측: 작업 패널 (넓음) */
+.editor-main-panel {
+  padding: 22px;
+  display: grid;
+  gap: 18px;
+}
+
+.editor-io-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.editor-io-grid > section { min-width: 0; padding: 18px; }
+
+.section-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+#editorSourceText,
+#editorOutputText { min-height: 300px; }
+
+/* 미리보기 — 단일 블록 안에 서술/대사 카드가 순차 게시 */
+.preview-block { padding: 18px; }
+
+.editor-preview {
+  display: grid;
+  gap: 12px;
+  min-height: 160px;
+  max-height: 460px;
+  overflow: auto;
+  padding: 4px;
+}
+
+.editor-preview:empty::before {
+  content: "정리·분리를 실행하면 서술과 대사 블록이 순서대로 표시됩니다.";
+  display: block;
+  padding: 28px 14px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.preview-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--panel-soft);
+}
+
+.preview-card[data-kind="dialogue"] { border-left: 3px solid var(--control); }
+
+.preview-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 40px;
+  padding: 5px 8px 5px 13px;
+  border-bottom: 1px solid var(--line);
+}
+
+.pc-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.pc-label::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.5;
+}
+
+.preview-card[data-kind="dialogue"] .pc-label::before { background: var(--control); opacity: 1; }
+
+.pc-actions { display: flex; gap: 6px; }
+
+.pc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--button-bg);
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.pc-btn:hover { background: var(--accent); color: var(--accent-text); border-color: var(--accent-border); }
+.pc-btn svg { width: 14px; height: 14px; }
+
+.preview-card-body {
+  padding: 12px 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 13.5px;
+  line-height: 1.6;
+  outline: none;
+}
+
+.preview-card-body[contenteditable="true"] {
+  background: var(--input-bg);
+  box-shadow: inset 0 0 0 2px var(--focus-ring);
+}
+
+.preview-card.is-editing .pc-edit {
+  background: var(--accent-grad);
+  color: var(--on-accent);
+  border-color: transparent;
+}
+
+/* 복사/완료 토스트 알림 */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  transform: translate(-50%, 14px);
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  max-width: min(90vw, 420px);
+  padding: 12px 20px;
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  backdrop-filter: blur(16px) saturate(1.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+.toast svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  color: var(--control);
+}
+
+/* =========================================================
+   반응형
+   ========================================================= */
+@media (min-width: 1500px) {
+  .translation-layout {
+    display: grid;
+    grid-template-columns: minmax(520px, 0.95fr) minmax(460px, 1.05fr);
+    gap: 20px;
+    align-items: start;
+  }
+  .translation-layout .editor-grid { grid-template-columns: 1fr; }
+  .translation-layout .result-panel {
+    border-top: 0;
+    border-left: 1px solid var(--line);
+    padding-top: 0;
+    padding-left: 20px;
+  }
+  .translation-layout #sourceText { min-height: 300px; }
+  .translation-layout #contextMemo { min-height: 160px; }
+  .translation-layout .result-section:first-of-type { margin-top: 0; }
+}
+
+@media (max-width: 1100px) {
+  .workspace,
+  .editor-workspace,
+  .editor-grid { grid-template-columns: 1fr; }
+  .workspace.settings-collapsed { --settings-width: 1fr; }
+  .settings-collapsed .settings-panel { padding: 20px; }
+  .settings-collapsed .settings-content { display: block; min-width: 300px; }
+  .settings-collapsed .settings-toggle { position: static; }
+  .settings-collapsed .settings-header h2,
+  .settings-collapsed .settings-content > :not(.settings-header) { display: block; }
+  .mode-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .editor-io-grid { grid-template-columns: 1fr; }
+  .editor-button-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+  .app-shell { padding: 16px; }
+  .topbar { flex-direction: column; align-items: stretch; }
+  .topbar-actions { width: 100%; flex-direction: column; align-items: stretch; gap: 10px; }
+  .theme-control { justify-content: space-between; }
+  .theme-control select { flex: 1; }
+  .action-row { grid-template-columns: 1fr; gap: 10px; }
+  .run-status { text-align: left; }
+  .tool-switch { width: 100%; }
+  .tool-switch-btn { flex: 1; }
+}
+    </style>
+  </head>
+  <body data-theme="lilac">
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <svg class="brand-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="tile" gradientUnits="userSpaceOnUse" x1="60" y1="20" x2="452" y2="500"><stop offset="0" stop-color="#CBB8FB"></stop><stop offset="1" stop-color="#A6E5EE"></stop></linearGradient></defs><rect width="512" height="512" rx="114" fill="url(#tile)"></rect><rect x="196" y="92" width="60" height="132" rx="30" fill="#FFFFFF" transform="rotate(-5 226 224)"></rect><rect x="256" y="92" width="60" height="132" rx="30" fill="#FFFFFF" transform="rotate(5 286 224)"></rect><ellipse cx="256" cy="298" rx="132" ry="126" fill="#FFFFFF"></ellipse><circle cx="256" cy="298" r="74" fill="url(#tile)"></circle><path d="M250.57,263.84Q256.00,252.00 261.43,263.84L263.50,268.36Q268.93,280.20 281.87,281.71L286.81,282.28Q299.75,283.79 290.16,292.61L286.51,295.97Q276.92,304.80 279.49,317.57L280.47,322.44Q283.04,335.21 271.68,328.82L267.36,326.39Q256.00,320.00 244.64,326.39L240.32,328.82Q228.96,335.21 231.53,322.44L232.51,317.57Q235.08,304.80 225.49,295.97L221.84,292.61Q212.25,283.79 225.19,282.28L230.13,281.71Q243.07,280.20 248.50,268.36Z" fill="#FFFFFF"></path></svg>
+          <div class="brand-text">
+            <h1>CST</h1>
+            <p>시나리오 번역과 문맥 교정 도구</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <div class="tool-switch" role="tablist" aria-label="작업 선택">
+            <button id="showTranslator" class="tool-switch-btn active" type="button" aria-selected="true">번역기</button>
+            <button id="showEditor" class="tool-switch-btn" type="button" aria-selected="false">문맥교정기</button>
+          </div>
+          <label class="theme-control">
+            <span>테마</span>
+            <select id="themeSelect">
+              <option value="lilac">라일락 민트</option>
+              <option value="sky">블루</option>
+              <option value="pink">핑크</option>
+              <option value="green">그린</option>
+              <option value="dark">다크 모드</option>
+            </select>
+          </label>
+        </div>
+      </header>
+
+      <section id="translatorTool" class="workspace tool-view active" data-screen-label="번역기">
+        <aside class="settings-panel collapse-group" id="settingsPanel" aria-label="설정">
+          <div class="settings-content">
+          <div class="settings-header">
+            <h2>설정</h2>
+            <button id="toggleSettings" class="settings-toggle" type="button" aria-expanded="true" title="설정 접기/펼치기" aria-controls="settingsBody">
+              <svg class="settings-arrow" viewBox="0 0 8 12" fill="none" aria-hidden="true"><path d="M6.5 1L1.5 6L6.5 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+          </div>
+
+          <div class="collapse-body" id="settingsBody">
+          <section class="mode-help" aria-live="polite">
+            <span>현재 번역 모드</span>
+            <h3 id="modeHelpTitle">원문 충실 번역</h3>
+            <p id="modeHelpText">원문의 문장 구조, 정보 순서, 조건문, 단서 표현을 최대한 보존하고 의역을 최소화합니다.</p>
+          </section>
+
+          <p class="group-label">API 연결</p>
+
+          <label class="field">
+            <span>API 제공사</span>
+            <select id="provider">
+              <option value="openai">OpenAI</option>
+              <option value="gemini">Gemini</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>API Key</span>
+            <input id="apiKey" type="password" autocomplete="off" placeholder="선택한 제공사의 API 키를 입력하세요." />
+          </label>
+
+          <label class="field">
+            <span>모델</span>
+            <div class="select-with-button">
+              <!-- 데모용 옵션. 실제 앱은 새로고침 시 JS가 채웁니다. -->
+              <select id="model">
+                <option>gpt-4o-mini (예시)</option>
+                <option>gpt-4o (예시)</option>
+              </select>
+              <button id="refreshModels" class="secondary-btn icon-btn" type="button" title="모델 목록 새로고침" aria-label="모델 목록 새로고침">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><path d="M21 3v5h-5"></path></svg>
+              </button>
+            </div>
+            <small id="modelHint">API 키를 입력한 뒤 새로고침하면 사용 가능한 모델을 불러옵니다.</small>
+          </label>
+
+          <p class="group-label">번역 옵션</p>
+
+          <label class="field">
+            <span>1회 번역 글자수 제한</span>
+            <input id="charLimit" type="number" min="100" step="100" value="3000" />
+          </label>
+
+          <label class="toggle-row">
+            <input id="includeCocNotes" type="checkbox" checked />
+            <span>CoC 7판 참고 메모 사용</span>
+          </label>
+
+          <div class="settings-actions">
+            <button id="saveSettings" class="primary-btn" type="button">설정 저장</button>
+            <div class="status-pill" id="saveStatus">설정 대기</div>
+          </div>
+
+          <section class="log-tools" aria-label="오류 로그">
+            <h3>오류 로그</h3>
+            <p class="log-tools-desc">오류는 내 PC에만 기록됩니다. API 키와 입력 원문은 저장되지 않습니다.</p>
+            <div class="log-tools-buttons">
+              <button id="openLogFolder" class="secondary-btn small" type="button">폴더 열기</button>
+              <button id="copyLogs" class="secondary-btn small" type="button">복사</button>
+              <button id="clearLogs" class="secondary-btn small danger-btn" type="button">삭제</button>
+            </div>
+            <small id="logStatus" class="log-status" aria-live="polite"></small>
+          </section>
+          </div>
+          </div>
+        </aside>
+
+        <section class="main-panel" aria-label="번역 작업">
+          <h2 class="panel-title">번역 모드</h2>
+          <div class="mode-row" role="radiogroup" aria-label="번역 모드">
+            <label><input type="radio" name="mode" value="faithful" checked /><span class="m-name">원문 충실</span><span class="m-desc">구조·정보 순서 보존</span></label>
+            <label><input type="radio" name="mode" value="natural" /><span class="m-name">자연스러운 번역</span><span class="m-desc">읽기 쉽게 의역</span></label>
+            <label><input type="radio" name="mode" value="handout" /><span class="m-name">핸드아웃 보존</span><span class="m-desc">HO·비밀 정보 유지</span></label>
+            <label><input type="radio" name="mode" value="coc7" /><span class="m-name">CoC 7판 메모 중심</span><span class="m-desc">룰 용어 변환 강조</span></label>
+          </div>
+
+          <div class="translation-layout">
+            <div class="input-column">
+              <div class="editor-grid">
+                <section class="editor-block">
+                  <div class="section-heading">
+                    <h2>일본어 원문</h2>
+                    <span id="charCounter">현재 글자수: 0 / 3,000</span>
+                  </div>
+                  <textarea id="sourceText" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="번역할 일본어 시나리오 일부를 붙여넣으세요."></textarea>
+                  <p class="warning" id="limitWarning" hidden>입력 글자수가 제한을 초과했습니다. 문단을 나누어 번역하세요.</p>
+                </section>
+
+                <section class="editor-block">
+                  <div class="section-heading">
+                    <h2>보조 메모</h2>
+                  </div>
+                  <textarea id="contextMemo" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="등장인물 이름, KPC 설명, 관계, 고유명사 처리 방식, 호칭 유지 여부 등을 입력하세요."></textarea>
+                </section>
+              </div>
+
+              <div class="action-row">
+                <div class="action-buttons">
+                  <button id="translateBtn" class="primary-btn large" type="button">번역 실행</button>
+                  <button id="clearBtn" class="secondary-btn" type="button">입력 비우기</button>
+                  <button id="cancelBtn" class="secondary-btn danger-btn" type="button" disabled>번역 중지</button>
+                </div>
+                <span id="runStatus" class="run-status" role="status" aria-live="polite"></span>
+              </div>
+            </div>
+
+            <section class="result-panel">
+              <div class="section-heading">
+                <h2>결과</h2>
+                <button id="copyAll" class="secondary-btn small" type="button">
+                  <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg>
+                  전체 복사
+                </button>
+              </div>
+
+              <article class="result-section">
+                <div>
+                  <h3>번역문</h3>
+                  <button data-copy-target="translation" class="ghost-btn" type="button">복사</button>
+                </div>
+                <pre id="translation">(예시) 낡은 저택의 문이 삐걱이며 열린다. 탐사자는 복도 끝에서 희미한 불빛을 발견한다.</pre>
+              </article>
+
+              <article class="result-section">
+                <div>
+                  <h3>CoC 7판 참고 메모</h3>
+                  <button data-copy-target="cocNotes" class="ghost-btn" type="button">복사</button>
+                </div>
+                <pre id="cocNotes">(예시) 目星 → 관찰력 / 聞き耳 → 듣기 로 변환했습니다.</pre>
+              </article>
+
+              <article class="result-section">
+                <div>
+                  <h3>검토 필요 항목</h3>
+                  <button data-copy-target="reviewItems" class="ghost-btn" type="button">복사</button>
+                </div>
+                <pre id="reviewItems">(예시) 대항 판정은 7판 성공 수준 비교 방식으로 재검토하세요.</pre>
+              </article>
+
+              <article class="result-section">
+                <div>
+                  <h3>고유명사/호칭 메모</h3>
+                  <button data-copy-target="nameNotes" class="ghost-btn" type="button">복사</button>
+                </div>
+                <pre id="nameNotes">(예시) 陽(미나미) — 인물명 문맥에서 사용.</pre>
+              </article>
+            </section>
+          </div>
+        </section>
+      </section>
+
+      <section id="editorTool" class="editor-workspace tool-view" aria-label="문맥문단 교정기" data-screen-label="문맥교정기">
+        <aside class="editor-settings-panel" aria-label="교정 설정">
+          <div class="settings-header">
+            <h2>교정 설정</h2>
+          </div>
+
+          <div class="collapse-group" id="editorApiGroup">
+            <button class="group-toggle" id="editorApiToggle" type="button" aria-expanded="true" aria-controls="editorApiBody">
+              <span class="group-label">API 연결</span>
+              <svg class="group-chevron" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+
+            <div class="collapse-body" id="editorApiBody">
+              <label class="field compact-field">
+                <span>API 제공사</span>
+                <select id="editorProvider">
+                  <option value="openai">OpenAI</option>
+                  <option value="gemini">Gemini</option>
+                </select>
+              </label>
+
+              <label class="field compact-field">
+                <span>API Key</span>
+                <input id="editorApiKey" type="password" autocomplete="off" placeholder="선택한 제공사의 API 키" />
+              </label>
+
+              <label class="field compact-field">
+                <span>모델</span>
+                <div class="select-with-button">
+                  <select id="editorModel">
+                    <option>gpt-4o-mini (예시)</option>
+                  </select>
+                  <button id="editorRefreshModels" class="secondary-btn icon-btn" type="button" title="모델 목록 새로고침" aria-label="모델 목록 새로고침">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><path d="M21 3v5h-5"></path></svg>
+                  </button>
+                </div>
+              </label>
+
+              <div class="settings-actions">
+                <button id="editorSaveSettings" class="primary-btn compact-save" type="button">API 설정 저장</button>
+              </div>
+              <div id="editorModelHint" class="editor-model-hint">번역기와 동일한 제공사·키·모델을 공유합니다. 키 입력 후 새로고침하면 모델을 불러옵니다.</div>
+            </div>
+          </div>
+
+          <div class="tools-legend">
+            <span class="legend-item"><span class="legend-swatch ai"></span>채워진 버튼 = AI 호출 (시간·비용 발생)</span>
+            <span class="legend-item"><span class="legend-swatch local"></span>외곽선 버튼 = 즉시 처리 (로컬, API 미사용)</span>
+          </div>
+
+          <section class="tool-section collapse-group">
+            <button class="tool-toggle" type="button" aria-expanded="true">
+              <div class="tool-section-head">
+                <h2>① 탐사자 지칭 설정</h2>
+                <p class="hint">탐사자를 부르는 호칭을 정합니다. 적용은 로컬에서 즉시 처리돼요.</p>
+              </div>
+              <svg class="group-chevron" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <div class="collapse-body">
+              <div class="target-row">
+                <label class="field inline-field">
+                  <span>탐사자 호칭</span>
+                  <input id="editorTargetName" type="text" value="당신" placeholder="당신 / PC 이름 / 형사" />
+                </label>
+                <label class="toggle-row inline-toggle">
+                  <input id="editorTargetDialogue" type="checkbox" />
+                  <span>대사 안 지칭도 변경</span>
+                </label>
+                <label class="toggle-row inline-toggle">
+                  <input id="editorTargetOmit" type="checkbox" checked />
+                  <span>반복 지칭 생략 허용</span>
+                </label>
+                <button id="editorApplyTarget" class="secondary-btn" type="button">호칭만 적용</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="tool-section collapse-group">
+            <button class="tool-toggle" type="button" aria-expanded="true">
+              <div class="tool-section-head">
+                <h2>② 문장·문맥 정리 (AI)</h2>
+                <p class="hint">AI가 문장을 다듬습니다. 정리 방식을 하나 고르세요.</p>
+              </div>
+              <svg class="group-chevron" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <div class="collapse-body">
+              <span class="subgroup-label">전체 정리</span>
+              <div class="editor-button-row">
+                <button class="primary-btn" data-editor-clean-mode="preserve" type="button">원문 유지 정리</button>
+                <button class="primary-btn" data-editor-clean-mode="natural" type="button">자연 서술 정리</button>
+                <button class="primary-btn" data-editor-clean-mode="remove_narrator" type="button">화자 개입 제거</button>
+              </div>
+              <span class="subgroup-label">대사는 그대로 두고 서술만</span>
+              <div class="editor-button-row">
+                <button class="primary-btn" data-editor-narration-mode="preserve" type="button">서술 보존</button>
+                <button class="primary-btn" data-editor-narration-mode="natural" type="button">서술 자연스럽게</button>
+                <button id="editorCancelBtn" class="secondary-btn danger-btn" type="button" disabled>교정 중지</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="tool-section collapse-group">
+            <button class="tool-toggle" type="button" aria-expanded="true">
+              <div class="tool-section-head">
+                <h2>③ 형식 정리 (즉시)</h2>
+                <p class="hint">AI 없이 즉시 처리되는 정리·추출 기능입니다.</p>
+              </div>
+              <svg class="group-chevron" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <div class="collapse-body">
+              <div class="editor-button-row">
+                <button id="editorLinebreak" class="secondary-btn" type="button">줄바꿈만</button>
+                <button class="secondary-btn" data-editor-split-action="split" type="button">대사/서술 분리</button>
+                <button class="secondary-btn" data-editor-split-action="dialogue_only" type="button">대사만 추출</button>
+                <button class="secondary-btn" data-editor-split-action="narration_only" type="button">서술만 추출</button>
+                <button id="editorSendTranslation" class="secondary-btn" type="button">번역문 가져오기</button>
+              </div>
+            </div>
+          </section>
+
+          <div id="editorStatus" class="run-status editor-status" role="status" aria-live="polite"></div>
+        </aside>
+
+        <section class="editor-main-panel" aria-label="교정 작업">
+          <div class="editor-io-grid">
+            <section class="editor-block">
+              <div class="section-heading">
+                <h2>교정 원문</h2>
+                <button id="editorClearSource" class="secondary-btn small" type="button">원문 비우기</button>
+              </div>
+              <textarea id="editorSourceText" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="번역 결과나 한국어 시나리오 문장을 붙여넣으세요."></textarea>
+            </section>
+
+            <section class="editor-block">
+              <div class="section-heading">
+                <h2>출력문</h2>
+                <div class="section-actions">
+                  <button id="editorCopyOutput" class="secondary-btn small" type="button">전체 복사</button>
+                  <button id="editorClearOutput" class="secondary-btn small" type="button">출력문 비우기</button>
+                </div>
+              </div>
+              <textarea id="editorOutputText" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="교정 결과가 여기에 표시됩니다. 직접 수정할 수도 있습니다."></textarea>
+            </section>
+          </div>
+
+          <section class="preview-block">
+            <div class="section-heading">
+              <h2>미리보기</h2>
+              <span id="editorPreviewCount">3개 블록</span>
+            </div>
+            <div id="editorPreview" class="editor-preview">
+              <article class="preview-card" data-kind="narration">
+                <div class="preview-card-title">
+                  <span class="pc-label">서술 01</span>
+                  <div class="pc-actions">
+                    <button class="pc-btn pc-edit" type="button">수정</button>
+                    <button class="pc-btn pc-copy" type="button">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg>
+                      복사
+                    </button>
+                  </div>
+                </div>
+                <div class="preview-card-body">(예시) 낡은 저택의 문이 삐걱이며 열린다. 복도 끝에서 희미한 불빛이 새어 나온다.</div>
+              </article>
+              <article class="preview-card" data-kind="dialogue">
+                <div class="preview-card-title">
+                  <span class="pc-label">대사 01</span>
+                  <div class="pc-actions">
+                    <button class="pc-btn pc-edit" type="button">수정</button>
+                    <button class="pc-btn pc-copy" type="button">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg>
+                      복사
+                    </button>
+                  </div>
+                </div>
+                <div class="preview-card-body">(예시) "여기 누구 없어요?"</div>
+              </article>
+              <article class="preview-card" data-kind="narration">
+                <div class="preview-card-title">
+                  <span class="pc-label">서술 02</span>
+                  <div class="pc-actions">
+                    <button class="pc-btn pc-edit" type="button">수정</button>
+                    <button class="pc-btn pc-copy" type="button">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg>
+                      복사
+                    </button>
+                  </div>
+                </div>
+                <div class="preview-card-body">(예시) 대답은 돌아오지 않는다. 탐사자는 손전등을 고쳐 쥔다.</div>
+              </article>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <div id="copyToast" class="toast" role="status" aria-live="polite">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+      <span id="copyToastText">복사되었습니다</span>
+    </div>
+
+    <!-- 데모 스텁: 탭 전환 / 테마 전환 / 설정 접기 / 복사·수정 알림만 동작. 실제 앱 로직(renderer.js) 아님. -->
+    <script>
+      (function () {
+        const $ = (id) => document.getElementById(id);
+        function switchTool(tool) {
+          $('translatorTool').classList.toggle('active', tool === 'translator');
+          $('editorTool').classList.toggle('active', tool === 'editor');
+          $('showTranslator').classList.toggle('active', tool === 'translator');
+          $('showEditor').classList.toggle('active', tool === 'editor');
+        }
+        $('showTranslator').addEventListener('click', () => switchTool('translator'));
+        $('showEditor').addEventListener('click', () => switchTool('editor'));
+        $('themeSelect').addEventListener('change', (e) => {
+          document.body.dataset.theme = e.target.value;
+        });
+        $('toggleSettings').addEventListener('click', () => {
+          const collapsed = $('settingsPanel').classList.toggle('collapsed');
+          $('toggleSettings').setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        });
+        /* 접힌 레일 어디를 눌러도 펼쳐지게 */
+        $('settingsPanel').addEventListener('click', (e) => {
+          if (!$('settingsPanel').classList.contains('collapsed')) return;
+          if (e.target.closest('#toggleSettings')) return;
+          $('toggleSettings').click();
+        });
+
+        /* 교정기 API 연결 그룹 접기 */
+        const apiToggle = $('editorApiToggle');
+        const apiGroup = $('editorApiGroup');
+        if (apiToggle && apiGroup) apiToggle.addEventListener('click', () => {
+          const collapsed = apiGroup.classList.toggle('collapsed');
+          apiToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        });
+
+        /* 교정기 도구 ①②③ 각각 접기 */
+        document.querySelectorAll('.tool-section.collapse-group .tool-toggle').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const collapsed = btn.closest('.collapse-group').classList.toggle('collapsed');
+            btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+          });
+        });
+
+        /* 복사 토스트 알림 */
+        const toast = $('copyToast');
+        const toastText = $('copyToastText');
+        let toastTimer = null;
+        function showToast(msg) {
+          toastText.textContent = msg || '복사되었습니다';
+          toast.classList.add('show');
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+        }
+        async function copyText(text) {
+          if (!text) return false;
+          try {
+            await navigator.clipboard.writeText(text);
+          } catch (_) {
+            /* 데모 환경 폴백 — 실제 앱에선 clipboard API 사용 */
+          }
+          return true;
+        }
+
+        /* 번역기 결과 복사 버튼 */
+        document.querySelectorAll('[data-copy-target]').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const el = $(btn.dataset.copyTarget);
+            await copyText(el ? el.textContent : '');
+            showToast('복사되었습니다');
+          });
+        });
+        const copyAll = $('copyAll');
+        if (copyAll) copyAll.addEventListener('click', async () => {
+          const parts = ['translation', 'cocNotes', 'reviewItems', 'nameNotes']
+            .map((id) => { const e = $(id); return e ? e.textContent : ''; })
+            .filter(Boolean);
+          await copyText(parts.join('\n\n'));
+          showToast('전체 결과를 복사했습니다');
+        });
+
+        /* 교정기 출력문 전체 복사 */
+        const editorCopyOutput = $('editorCopyOutput');
+        if (editorCopyOutput) editorCopyOutput.addEventListener('click', async () => {
+          const out = $('editorOutputText');
+          await copyText(out ? out.value : '');
+          showToast('출력문을 복사했습니다');
+        });
+
+        /* 미리보기 카드: 수정 토글 + 복사 */
+        const preview = $('editorPreview');
+        if (preview) preview.addEventListener('click', async (e) => {
+          const copyBtn = e.target.closest('.pc-copy');
+          const editBtn = e.target.closest('.pc-edit');
+          const card = e.target.closest('.preview-card');
+          if (!card) return;
+          const body = card.querySelector('.preview-card-body');
+          if (copyBtn) {
+            await copyText(body ? body.textContent : '');
+            showToast('블록을 복사했습니다');
+          } else if (editBtn) {
+            const editing = card.classList.toggle('is-editing');
+            body.setAttribute('contenteditable', editing ? 'true' : 'false');
+            editBtn.textContent = editing ? '완료' : '수정';
+            if (editing) {
+              body.focus();
+              const sel = window.getSelection();
+              const range = document.createRange();
+              range.selectNodeContents(body);
+              range.collapse(false);
+              sel.removeAllRanges();
+              sel.addRange(range);
+            } else {
+              showToast('수정 내용을 적용했습니다');
+            }
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+{
+  "name": "coc-jp-scenario-translator",
+  "version": "0.2.1",
+  "description": "Japanese Call of Cthulhu scenario partial translator with Korean output and CoC 7th edition notes.",
+  "main": "src/main.js",
+  "author": "nanayaD",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "check": "node --check src/main.js && node --check src/preload.js && node --check src/renderer.js && node --check src/manualContent.js && node --check src/translatorService.js && node --check src/editorService.js && node --check src/errorLogger.js && node --check src/updateService.js && node --check src/providers/openaiProvider.js && node --check src/providers/geminiProvider.js && node --check src/data/mythosGlossary.js && node --check src/data/trpgTerms.js && node --check src/data/cocBooks.js",
+    "build:portable": "electron-builder --win portable",
+    "build:installer": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^32.3.3",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "local.coc-jp-scenario-translator",
+    "productName": "CST",
+    "artifactName": "${productName}-${version}-${os}-${arch}-${name}.${ext}",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "assets/CoC-Scenario-Translator.ico",
+      "signAndEditExecutable": false,
+      "target": [
+        "portable",
+        "nsis"
+      ]
+    },
+    "portable": {
+      "artifactName": "CST-${version}-portable.${ext}"
+    },
+    "nsis": {
+      "artifactName": "CST-Setup-${version}.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

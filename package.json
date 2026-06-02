@@ -1,6 +1,6 @@
 {
   "name": "coc-jp-scenario-translator",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Japanese Call of Cthulhu scenario partial translator with Korean output and CoC 7th edition notes.",
   "main": "src/main.js",
   "author": "nanayaD",
@@ -31,6 +31,7 @@
     "files": [
       "src/**/*",
       "package.json",
+      "assets/**/*",
       "node_modules/pdfjs-dist/**/*"
     ],
     "asarUnpack": [

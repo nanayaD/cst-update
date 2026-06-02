@@ -586,7 +586,39 @@ textarea {
 }
 
 /* 라벨 옆 인라인 ? 도움말 버튼 */
-.field-label-row { display: inline-flex; align-items: center; gap: 6px; }
+.field-label-row { position: relative; display: inline-flex; align-items: center; gap: 6px; }
+
+/* 마우스 오버 시 ? 아래로 펼쳐지는 테마 적용 안내 팝업(설정 본문 폭 안에 들어오도록 좌측 정렬) */
+.field-tip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 60;
+  width: max-content;
+  max-width: 240px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.55;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 140ms ease, transform 140ms ease, visibility 140ms;
+  pointer-events: none;
+}
+
+.help-inline-btn:hover ~ .field-tip,
+.help-inline-btn:focus-visible ~ .field-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
 
 .help-inline-btn {
   width: 16px;

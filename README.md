@@ -31,6 +31,7 @@ The project is small and niche, but it serves a real workflow gap for Korean tab
 
 - Translation modes for faithful translation, natural Korean prose, handout-preserving output, and CoC 7e note-focused review.
 - Context editor for sentence cleanup, narration/dialogue splitting, narrator-intrusion removal, and reference term replacement.
+- PDF text extraction (local, no upload) for text-based horizontal-writing scenario PDFs, with optional ruby/furigana merging into parentheses and Japanese inter-character space cleanup, saved to a UTF-8 `.txt` file.
 - Built-in CoC/TRPG terminology data for mythos names, session terms, and sourcebook abbreviations.
 - OpenAI and Gemini provider support with model refresh.
 - In-app Korean user manual with API key setup guidance.

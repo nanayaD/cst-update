@@ -15,6 +15,14 @@ contextBridge.exposeInMainWorld('translatorApp', {
   clearLogs: () => ipcRenderer.invoke('log:clear'),
   checkForUpdates: (payload) => ipcRenderer.invoke('updates:check', payload),
   openUpdateDownload: (url) => ipcRenderer.invoke('updates:open-download', url),
+  selectPdf: () => ipcRenderer.invoke('pdf:select'),
+  extractPdf: (payload) => ipcRenderer.invoke('pdf:extract', payload),
+  cancelPdf: (requestId) => ipcRenderer.invoke('pdf:cancel', requestId),
+  savePdfText: (payload) => ipcRenderer.invoke('pdf:save', payload),
+  onPdfProgress: (callback) => {
+    if (typeof callback !== 'function') return;
+    ipcRenderer.on('pdf:progress', (_event, data) => callback(data));
+  },
   onOpenManual: (callback) => {
     if (typeof callback !== 'function') return;
     ipcRenderer.on('menu:open-manual', () => callback());

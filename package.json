@@ -1,6 +1,6 @@
 {
   "name": "coc-jp-scenario-translator",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Japanese Call of Cthulhu scenario partial translator with Korean output and CoC 7th edition notes.",
   "main": "src/main.js",
   "author": "nanayaD",
@@ -16,7 +16,7 @@
   "homepage": "https://github.com/nanayaD/cst-update#readme",
   "scripts": {
     "start": "electron .",
-    "check": "node --check src/main.js && node --check src/preload.js && node --check src/renderer.js && node --check src/manualContent.js && node --check src/translatorService.js && node --check src/editorService.js && node --check src/errorLogger.js && node --check src/updateService.js && node --check src/providers/openaiProvider.js && node --check src/providers/geminiProvider.js && node --check src/data/mythosGlossary.js && node --check src/data/trpgTerms.js && node --check src/data/cocBooks.js",
+    "check": "node --check src/main.js && node --check src/preload.js && node --check src/renderer.js && node --check src/manualContent.js && node --check src/translatorService.js && node --check src/editorService.js && node --check src/pdfService.js && node --check src/errorLogger.js && node --check src/updateService.js && node --check src/providers/openaiProvider.js && node --check src/providers/geminiProvider.js && node --check src/data/mythosGlossary.js && node --check src/data/trpgTerms.js && node --check src/data/cocBooks.js",
     "build:portable": "electron-builder --win portable",
     "build:installer": "electron-builder --win nsis"
   },
@@ -30,7 +30,11 @@
     "artifactName": "${productName}-${version}-${os}-${arch}-${name}.${ext}",
     "files": [
       "src/**/*",
-      "package.json"
+      "package.json",
+      "node_modules/pdfjs-dist/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/pdfjs-dist/**"
     ],
     "win": {
       "icon": "assets/CoC-Scenario-Translator.ico",
@@ -50,5 +54,8 @@
       "allowToChangeInstallationDirectory": true,
       "deleteAppDataOnUninstall": false
     }
+  },
+  "dependencies": {
+    "pdfjs-dist": "^4.10.38"
   }
 }

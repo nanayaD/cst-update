@@ -26,6 +26,7 @@
           <div class="tool-switch" role="tablist" aria-label="작업 선택">
             <button id="showTranslator" class="tool-switch-btn active" type="button" aria-selected="true">번역기</button>
             <button id="showEditor" class="tool-switch-btn" type="button" aria-selected="false">문맥교정기</button>
+            <button id="showPdf" class="tool-switch-btn" type="button" aria-selected="false">PDF 추출</button>
           </div>
           <label class="theme-control">
             <span>테마</span>
@@ -381,6 +382,59 @@
             <div id="editorPreview" class="editor-preview"></div>
           </section>
         </section>
+      </section>
+
+      <section id="pdfTool" class="pdf-workspace tool-view" aria-label="PDF 텍스트 추출" data-screen-label="PDF 추출">
+        <div class="pdf-panel">
+          <div class="pdf-intro">
+            <h2 class="panel-title">PDF 텍스트 추출</h2>
+            <p class="pdf-note">텍스트로 작성된 <strong>가로쓰기</strong> 시나리오 PDF에 적합합니다. 이미지(스캔)로 된 PDF나 세로쓰기 PDF는 추출되지 않거나 순서가 어긋날 수 있습니다. 모든 처리는 내 PC에서만 이루어지며 파일은 어디에도 업로드되지 않습니다.</p>
+          </div>
+
+          <section class="pdf-step">
+            <div class="section-heading"><h2>① PDF 선택</h2></div>
+            <div class="pdf-file-row">
+              <button id="pdfSelect" class="secondary-btn" type="button">PDF 파일 선택</button>
+              <span id="pdfFileName" class="pdf-file-name">선택된 파일이 없습니다.</span>
+            </div>
+          </section>
+
+          <section class="pdf-step">
+            <div class="section-heading"><h2>② 추출 옵션</h2></div>
+            <label class="toggle-row">
+              <input id="pdfRuby" type="checkbox" checked />
+              <span>루비/후리가나를 괄호로 합치기 — 예: 探索者(たんさくしゃ)</span>
+            </label>
+            <label class="toggle-row">
+              <input id="pdfStripSpaces" type="checkbox" checked />
+              <span>일본어 글자 사이에 끼는 불필요한 공백 제거</span>
+            </label>
+            <label class="toggle-row">
+              <input id="pdfReflow" type="checkbox" checked />
+              <span>페이지 줄바꿈 정리 — 끊긴 줄을 문단으로 합치기</span>
+            </label>
+            <p class="pdf-hint">옵션을 바꾸면 다시 추출해야 적용됩니다. 루비 인식과 줄바꿈 정리는 PDF에 따라 완벽하지 않을 수 있어, 결과가 이상하면 해당 옵션을 끄고 다시 추출하세요.</p>
+          </section>
+
+          <section class="pdf-step">
+            <div class="section-heading">
+              <h2>③ 추출 · 저장</h2>
+              <span id="pdfCharCount"></span>
+            </div>
+            <div class="pdf-action-row">
+              <button id="pdfExtract" class="primary-btn" type="button" disabled>텍스트 추출</button>
+              <button id="pdfCancel" class="secondary-btn danger-btn" type="button" disabled>추출 중지</button>
+              <button id="pdfSave" class="secondary-btn" type="button" disabled>TXT 파일로 저장</button>
+              <button id="pdfCopy" class="secondary-btn" type="button" disabled>전체 복사</button>
+            </div>
+            <div id="pdfStatus" class="run-status" role="status" aria-live="polite"></div>
+          </section>
+
+          <section class="pdf-step pdf-result">
+            <div class="section-heading"><h2>추출 결과 (미리보기)</h2></div>
+            <textarea id="pdfOutput" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="추출된 텍스트가 여기에 표시됩니다. 직접 수정한 뒤 저장하거나 복사할 수 있습니다."></textarea>
+          </section>
+        </div>
       </section>
     </main>
 

@@ -5,6 +5,7 @@ const translatorService = require('./translatorService');
 const editorService = require('./editorService');
 const errorLogger = require('./errorLogger');
 const updateService = require('./updateService');
+const pdfService = require('./pdfService');
 
 const { MODES, getProviderLabel } = translatorService;
 
@@ -38,6 +39,7 @@ const SUPPORTED_PROVIDERS = ['openai', 'gemini'];
 
 const activeTranslationRequests = new Map();
 const activeEditorRequests = new Map();
+const cancelledPdfRequests = new Set();
 
 let mainWindow = null;
 let pendingMigrationError = null;
@@ -507,6 +509,97 @@ ipcMain.handle('editor:cancel', async (_event, requestId) => {
 
   controller.abort();
   return true;
+});
+
+// PDF 텍스트 추출. 파일 읽기·파싱은 메인 프로세스에서 처리하고, 결과만 렌더러로 보낸다.
+// 개인정보 보호 원칙에 따라 파일 경로나 추출 내용은 로그에 남기지 않는다.
+ipcMain.handle('pdf:select', async () => {
+  const result = await dialog.showOpenDialog(mainWindow || undefined, {
+    title: '추출할 PDF 선택',
+    properties: ['openFile'],
+    filters: [{ name: 'PDF 파일', extensions: ['pdf'] }]
+  });
+
+  if (result.canceled || !result.filePaths.length) {
+    return { canceled: true };
+  }
+
+  const filePath = result.filePaths[0];
+  return { canceled: false, path: filePath, name: path.basename(filePath) };
+});
+
+ipcMain.handle('pdf:extract', async (_event, payload) => {
+  const requestId = String(payload?.requestId || '');
+  const filePath = String(payload?.path || '');
+  const ruby = payload?.ruby !== false;
+  const stripSpaces = payload?.stripSpaces !== false;
+  const reflow = payload?.reflow !== false;
+
+  if (!filePath) {
+    throw new Error('추출할 PDF를 먼저 선택하세요.');
+  }
+
+  cancelledPdfRequests.delete(requestId);
+
+  try {
+    const result = await pdfService.extractText(
+      filePath,
+      { ruby, stripSpaces, reflow },
+      {
+        isCancelled: () => requestId && cancelledPdfRequests.has(requestId),
+        onProgress: (page, total) => {
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('pdf:progress', { requestId, page, total });
+          }
+        }
+      }
+    );
+    return result;
+  } catch (error) {
+    if (error && error.cancelled) {
+      return { cancelled: true };
+    }
+    // 파일 경로·내용은 details에 넣지 않는다.
+    errorLogger.logError('pdf_extract_failed', error, { details: { code: error.code || null } });
+    throw error;
+  } finally {
+    if (requestId) cancelledPdfRequests.delete(requestId);
+  }
+});
+
+ipcMain.handle('pdf:cancel', async (_event, requestId) => {
+  const id = String(requestId || '');
+  if (!id) return false;
+  cancelledPdfRequests.add(id);
+  return true;
+});
+
+ipcMain.handle('pdf:save', async (_event, payload) => {
+  const text = String(payload?.text || '');
+  const defaultName = String(payload?.defaultName || 'extracted.txt');
+
+  if (!text) {
+    throw new Error('저장할 텍스트가 없습니다.');
+  }
+
+  const result = await dialog.showSaveDialog(mainWindow || undefined, {
+    title: '텍스트 파일로 저장',
+    defaultPath: defaultName,
+    filters: [{ name: '텍스트 파일', extensions: ['txt'] }]
+  });
+
+  if (result.canceled || !result.filePath) {
+    return { canceled: true };
+  }
+
+  try {
+    // 윈도우 메모장 호환을 위해 UTF-8 BOM을 붙여 저장한다.
+    await fs.writeFile(result.filePath, '﻿' + text, 'utf8');
+    return { canceled: false, path: result.filePath };
+  } catch (error) {
+    errorLogger.logError('pdf_save_failed', error);
+    throw new Error('텍스트 파일을 저장하지 못했습니다.');
+  }
 });
 
 // 렌더러(UI)에서 발생한 오류를 메인 프로세스 로그로 전달받는다.

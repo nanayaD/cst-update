@@ -585,21 +585,21 @@ textarea {
   line-height: 1.5;
 }
 
-/* 라벨 옆 인라인 ? 도움말 버튼 */
-.field-label-row { position: relative; display: inline-flex; align-items: center; gap: 6px; }
+/* 라벨 옆 인라인 ? 도움말 버튼. 줄을 가로로 꽉 채워 툴팁을 패널 오른쪽 벽에 붙일 수 있게 한다. */
+.field-label-row { position: relative; display: flex; align-items: center; gap: 6px; }
 
-/* 마우스 오버 시 ? 아래로 펼쳐지는 테마 적용 안내 팝업(설정 본문 폭 안에 들어오도록 좌측 정렬) */
+/* 마우스 오버 시 ? 위쪽으로 떠오르는 테마 적용 안내 팝업. 패널 오른쪽 벽에 붙이고 불투명 배경으로 가독성 확보. */
 .field-tip {
   position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
+  bottom: calc(100% + 8px);
+  right: 0;
   z-index: 60;
   width: max-content;
   max-width: 240px;
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  background: var(--panel);
+  background: #ffffff;
   color: var(--text);
   box-shadow: var(--shadow);
   font-size: 12.5px;
@@ -608,9 +608,14 @@ textarea {
   white-space: normal;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-4px);
+  transform: translateY(6px);
   transition: opacity 140ms ease, transform 140ms ease, visibility 140ms;
   pointer-events: none;
+}
+
+[data-theme="dark"] .field-tip {
+  background: #2a2a36;
+  border-color: rgba(255, 255, 255, 0.16);
 }
 
 .help-inline-btn:hover ~ .field-tip,

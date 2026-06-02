@@ -68,8 +68,10 @@ const modeHelp = {
 const elements = {
   showTranslator: document.querySelector('#showTranslator'),
   showEditor: document.querySelector('#showEditor'),
+  showPdf: document.querySelector('#showPdf'),
   translatorTool: document.querySelector('#translatorTool'),
   editorTool: document.querySelector('#editorTool'),
+  pdfTool: document.querySelector('#pdfTool'),
   provider: document.querySelector('#provider'),
   apiKey: document.querySelector('#apiKey'),
   model: document.querySelector('#model'),
@@ -155,7 +157,27 @@ const elements = {
   releaseDateText: document.querySelector('#releaseDateText'),
   updateGuideText: document.querySelector('#updateGuideText'),
   migrationMessageText: document.querySelector('#migrationMessageText'),
-  updateNotesList: document.querySelector('#updateNotesList')
+  updateNotesList: document.querySelector('#updateNotesList'),
+  pdfSelect: document.querySelector('#pdfSelect'),
+  pdfFileName: document.querySelector('#pdfFileName'),
+  pdfRuby: document.querySelector('#pdfRuby'),
+  pdfStripSpaces: document.querySelector('#pdfStripSpaces'),
+  pdfReflow: document.querySelector('#pdfReflow'),
+  pdfExtract: document.querySelector('#pdfExtract'),
+  pdfCancel: document.querySelector('#pdfCancel'),
+  pdfSave: document.querySelector('#pdfSave'),
+  pdfCopy: document.querySelector('#pdfCopy'),
+  pdfCharCount: document.querySelector('#pdfCharCount'),
+  pdfStatus: document.querySelector('#pdfStatus'),
+  pdfOutput: document.querySelector('#pdfOutput')
+};
+
+// PDF 추출 탭 상태. 선택한 파일은 메인 프로세스 경로만 보관한다.
+const pdfState = {
+  filePath: null,
+  fileName: null,
+  isRunning: false,
+  requestId: null
 };
 
 const resultTargets = ['translation', 'cocNotes', 'reviewItems', 'nameNotes'];
@@ -196,6 +218,7 @@ async function init() {
 function bindEvents() {
   elements.showTranslator.addEventListener('click', () => switchTool('translator'));
   elements.showEditor.addEventListener('click', () => switchTool('editor'));
+  elements.showPdf.addEventListener('click', () => switchTool('pdf'));
   elements.saveSettings.addEventListener('click', saveSettings);
   if (elements.clearApiKeys) elements.clearApiKeys.addEventListener('click', clearSavedApiKeys);
   elements.refreshModels.addEventListener('click', refreshModels);
@@ -261,6 +284,7 @@ function bindEvents() {
   elements.editorCopyOutput.addEventListener('click', () => copyText(elements.editorOutputText.value, '출력문을 복사했습니다'));
   elements.editorCopyPreviewAll.addEventListener('click', () => copyText(previewPlainText(), '미리보기 전체를 복사했습니다'));
   bindConfirmModal();
+  bindPdfEvents();
 
   document.querySelectorAll('[data-editor-run]').forEach((button) => {
     button.addEventListener('click', () => runEditorAction(button.dataset.editorRun, button));
@@ -354,15 +378,18 @@ function bindCollapsibles() {
 
 function switchTool(tool) {
   stashActiveApiControls();
-  state.activeTool = tool === 'editor' ? 'editor' : 'translator';
+  state.activeTool = tool === 'editor' ? 'editor' : tool === 'pdf' ? 'pdf' : 'translator';
   applySettingsToForm(state.settings || collectSettingsFromForm());
-  const isEditor = state.activeTool === 'editor';
-  elements.translatorTool.classList.toggle('active', !isEditor);
-  elements.editorTool.classList.toggle('active', isEditor);
-  elements.showTranslator.classList.toggle('active', !isEditor);
-  elements.showEditor.classList.toggle('active', isEditor);
-  elements.showTranslator.setAttribute('aria-selected', String(!isEditor));
-  elements.showEditor.setAttribute('aria-selected', String(isEditor));
+  const active = state.activeTool;
+  elements.translatorTool.classList.toggle('active', active === 'translator');
+  elements.editorTool.classList.toggle('active', active === 'editor');
+  elements.pdfTool.classList.toggle('active', active === 'pdf');
+  elements.showTranslator.classList.toggle('active', active === 'translator');
+  elements.showEditor.classList.toggle('active', active === 'editor');
+  elements.showPdf.classList.toggle('active', active === 'pdf');
+  elements.showTranslator.setAttribute('aria-selected', String(active === 'translator'));
+  elements.showEditor.setAttribute('aria-selected', String(active === 'editor'));
+  elements.showPdf.setAttribute('aria-selected', String(active === 'pdf'));
   updateModelHint();
   updateCounter();
 }
@@ -1215,6 +1242,124 @@ function applyContentFontSize() {
 function setEditorStatus(message, isError = false) {
   elements.editorStatus.textContent = message || '';
   elements.editorStatus.classList.toggle('error', Boolean(isError));
+}
+
+// --- PDF 텍스트 추출 ---------------------------------------------------------
+
+function bindPdfEvents() {
+  if (!elements.pdfSelect) return;
+  elements.pdfSelect.addEventListener('click', selectPdf);
+  elements.pdfExtract.addEventListener('click', runPdfExtract);
+  elements.pdfCancel.addEventListener('click', cancelPdfExtract);
+  elements.pdfSave.addEventListener('click', savePdfText);
+  elements.pdfCopy.addEventListener('click', () => copyText(elements.pdfOutput.value, 'PDF 텍스트를 복사했습니다'));
+  elements.pdfOutput.addEventListener('input', updatePdfOutputButtons);
+  window.translatorApp?.onPdfProgress?.((data) => {
+    if (!pdfState.isRunning || !data) return;
+    if (data.requestId && data.requestId !== pdfState.requestId) return;
+    setPdfStatus(`추출 중... (${data.page}/${data.total} 페이지)`);
+  });
+  updatePdfOutputButtons();
+}
+
+function setPdfStatus(message, isError = false) {
+  elements.pdfStatus.textContent = message || '';
+  elements.pdfStatus.classList.toggle('error', Boolean(isError));
+}
+
+function updatePdfOutputButtons() {
+  const hasText = Boolean(elements.pdfOutput.value.trim());
+  elements.pdfSave.disabled = pdfState.isRunning || !hasText;
+  elements.pdfCopy.disabled = pdfState.isRunning || !hasText;
+  const len = elements.pdfOutput.value.length;
+  elements.pdfCharCount.textContent = len ? `${len.toLocaleString('ko-KR')}자` : '';
+}
+
+async function selectPdf() {
+  if (pdfState.isRunning) return;
+  try {
+    const result = await window.translatorApp.selectPdf();
+    if (!result || result.canceled) return;
+    pdfState.filePath = result.path;
+    pdfState.fileName = result.name;
+    elements.pdfFileName.textContent = result.name;
+    elements.pdfFileName.classList.add('has-file');
+    elements.pdfExtract.disabled = false;
+    setPdfStatus('');
+  } catch (error) {
+    setPdfStatus(error.message || 'PDF를 선택하지 못했습니다.', true);
+  }
+}
+
+async function runPdfExtract() {
+  if (pdfState.isRunning || !pdfState.filePath) return;
+
+  pdfState.isRunning = true;
+  pdfState.requestId = `pdf-${Date.now()}`;
+  elements.pdfExtract.disabled = true;
+  elements.pdfSelect.disabled = true;
+  elements.pdfCancel.disabled = false;
+  updatePdfOutputButtons();
+  setPdfStatus('추출 중...');
+
+  try {
+    const result = await window.translatorApp.extractPdf({
+      requestId: pdfState.requestId,
+      path: pdfState.filePath,
+      ruby: elements.pdfRuby.checked,
+      stripSpaces: elements.pdfStripSpaces.checked,
+      reflow: elements.pdfReflow.checked
+    });
+
+    if (result?.cancelled) {
+      setPdfStatus('추출을 중지했습니다.');
+      return;
+    }
+
+    elements.pdfOutput.value = result.text || '';
+
+    if (result.empty) {
+      setPdfStatus('추출된 텍스트가 없습니다. 이미지(스캔) PDF이거나 텍스트 레이어가 없을 수 있습니다.', true);
+    } else if (result.verticalSuspected) {
+      setPdfStatus(`완료: ${result.pageCount}페이지, ${result.charCount.toLocaleString('ko-KR')}자. 다만 세로쓰기로 보여 순서가 어긋날 수 있습니다.`, true);
+    } else {
+      setPdfStatus(`완료: ${result.pageCount}페이지, ${result.charCount.toLocaleString('ko-KR')}자를 추출했습니다.`);
+    }
+  } catch (error) {
+    elements.pdfOutput.value = '';
+    setPdfStatus(error.message || 'PDF 추출에 실패했습니다.', true);
+  } finally {
+    pdfState.isRunning = false;
+    pdfState.requestId = null;
+    elements.pdfExtract.disabled = false;
+    elements.pdfSelect.disabled = false;
+    elements.pdfCancel.disabled = true;
+    updatePdfOutputButtons();
+  }
+}
+
+async function cancelPdfExtract() {
+  if (!pdfState.isRunning || !pdfState.requestId) return;
+  elements.pdfCancel.disabled = true;
+  try {
+    await window.translatorApp.cancelPdf(pdfState.requestId);
+  } catch {
+    // 취소 실패는 무시한다.
+  }
+}
+
+async function savePdfText() {
+  const text = elements.pdfOutput.value;
+  if (!text.trim()) return;
+  const base = (pdfState.fileName || 'extracted').replace(/\.pdf$/i, '');
+  try {
+    const result = await window.translatorApp.savePdfText({ text, defaultName: `${base}.txt` });
+    if (result?.canceled) return;
+    setPdfStatus('TXT 파일로 저장했습니다.');
+    showToast('TXT 파일로 저장했습니다');
+  } catch (error) {
+    setPdfStatus(error.message || '저장에 실패했습니다.', true);
+  }
 }
 
 function updateEditorButtons() {

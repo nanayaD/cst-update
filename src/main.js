@@ -5,6 +5,7 @@ const translatorService = require('./translatorService');
 const editorService = require('./editorService');
 const errorLogger = require('./errorLogger');
 const updateService = require('./updateService');
+const pdfService = require('./pdfService');
 
 const { MODES, getProviderLabel } = translatorService;
 
@@ -38,6 +39,7 @@ const SUPPORTED_PROVIDERS = ['openai', 'gemini'];
 
 const activeTranslationRequests = new Map();
 const activeEditorRequests = new Map();
+const cancelledPdfRequests = new Set();
 
 let mainWindow = null;
 let pendingMigrationError = null;
@@ -46,28 +48,43 @@ function getSettingsPath() {
   return path.join(app.getPath('userData'), 'settings.json');
 }
 
-// 옛 폴더(coc-jp-scenario-translator) → 새 폴더(CST) 1회 이전. 실패해도 앱 실행을 막지 않는다.
+// 옛 폴더(coc-jp-scenario-translator) → 새 폴더(CST) 1회 이전 후, 옛 폴더를 정리한다.
+// 실패해도 앱 실행을 막지 않는다.
 async function migrateLegacyUserDataIfNeeded() {
   const newDir = app.getPath('userData');
   const oldDir = path.join(app.getPath('appData'), LEGACY_USERDATA_DIR_NAME);
   if (path.resolve(newDir) === path.resolve(oldDir)) return;
 
-  // 새 폴더에 이미 설정이 있으면 건너뛴다(덮어쓰기 방지).
-  try {
-    await fs.access(path.join(newDir, 'settings.json'));
-    return;
-  } catch {}
+  const exists = async (target) => {
+    try {
+      await fs.access(target);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
-  // 옛 폴더에 설정이 없으면 신규 사용자이므로 이전할 게 없다.
-  try {
-    await fs.access(path.join(oldDir, 'settings.json'));
-  } catch {
-    return;
+  // 옛 폴더 자체가 없으면 할 일이 없다(신규 사용자 등).
+  if (!(await exists(oldDir))) return;
+
+  const newHasSettings = await exists(path.join(newDir, 'settings.json'));
+
+  // 새 폴더에 아직 설정이 없으면 옛 폴더에서 1회 복사한다.
+  if (!newHasSettings) {
+    // 옛 폴더에 설정이 없으면 이전할 내용이 없으므로, 섣불리 옛 폴더를 지우지 않고 둔다.
+    if (!(await exists(path.join(oldDir, 'settings.json')))) return;
+
+    // 옛 폴더 내용(settings.json, logs 등)을 새 폴더로 복사. 기존 파일은 건드리지 않는다.
+    await fs.mkdir(newDir, { recursive: true });
+    await fs.cp(oldDir, newDir, { recursive: true, force: false, errorOnExist: false });
   }
 
-  // 옛 폴더 내용(settings.json, logs 등)을 새 폴더로 복사. 기존 파일은 건드리지 않는다.
-  await fs.mkdir(newDir, { recursive: true });
-  await fs.cp(oldDir, newDir, { recursive: true, force: false, errorOnExist: false });
+  // 새 폴더에 정상 설정이 있는 것을 확인한 뒤에만 옛 폴더를 삭제한다.
+  // (이미 CST로 이전을 마친 사용자도 이 경로로 옛 폴더가 정리된다.)
+  // 옛 폴더의 settings.json에는 API 키가 평문으로 남으므로, 검증 후 삭제로 사본을 남기지 않는다.
+  // 삭제 실패는 치명적이지 않으므로 호출부(try/catch)에서 로그만 남기고 앱은 계속 실행한다.
+  await fs.access(path.join(newDir, 'settings.json'));
+  await fs.rm(oldDir, { recursive: true, force: true });
 }
 
 async function readSettings() {
@@ -507,6 +524,97 @@ ipcMain.handle('editor:cancel', async (_event, requestId) => {
 
   controller.abort();
   return true;
+});
+
+// PDF 텍스트 추출. 파일 읽기·파싱은 메인 프로세스에서 처리하고, 결과만 렌더러로 보낸다.
+// 개인정보 보호 원칙에 따라 파일 경로나 추출 내용은 로그에 남기지 않는다.
+ipcMain.handle('pdf:select', async () => {
+  const result = await dialog.showOpenDialog(mainWindow || undefined, {
+    title: '추출할 PDF 선택',
+    properties: ['openFile'],
+    filters: [{ name: 'PDF 파일', extensions: ['pdf'] }]
+  });
+
+  if (result.canceled || !result.filePaths.length) {
+    return { canceled: true };
+  }
+
+  const filePath = result.filePaths[0];
+  return { canceled: false, path: filePath, name: path.basename(filePath) };
+});
+
+ipcMain.handle('pdf:extract', async (_event, payload) => {
+  const requestId = String(payload?.requestId || '');
+  const filePath = String(payload?.path || '');
+  const ruby = payload?.ruby !== false;
+  const stripSpaces = payload?.stripSpaces !== false;
+  const reflow = payload?.reflow !== false;
+
+  if (!filePath) {
+    throw new Error('추출할 PDF를 먼저 선택하세요.');
+  }
+
+  cancelledPdfRequests.delete(requestId);
+
+  try {
+    const result = await pdfService.extractText(
+      filePath,
+      { ruby, stripSpaces, reflow },
+      {
+        isCancelled: () => requestId && cancelledPdfRequests.has(requestId),
+        onProgress: (page, total) => {
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('pdf:progress', { requestId, page, total });
+          }
+        }
+      }
+    );
+    return result;
+  } catch (error) {
+    if (error && error.cancelled) {
+      return { cancelled: true };
+    }
+    // 파일 경로·내용은 details에 넣지 않는다.
+    errorLogger.logError('pdf_extract_failed', error, { details: { code: error.code || null } });
+    throw error;
+  } finally {
+    if (requestId) cancelledPdfRequests.delete(requestId);
+  }
+});
+
+ipcMain.handle('pdf:cancel', async (_event, requestId) => {
+  const id = String(requestId || '');
+  if (!id) return false;
+  cancelledPdfRequests.add(id);
+  return true;
+});
+
+ipcMain.handle('pdf:save', async (_event, payload) => {
+  const text = String(payload?.text || '');
+  const defaultName = String(payload?.defaultName || 'extracted.txt');
+
+  if (!text) {
+    throw new Error('저장할 텍스트가 없습니다.');
+  }
+
+  const result = await dialog.showSaveDialog(mainWindow || undefined, {
+    title: '텍스트 파일로 저장',
+    defaultPath: defaultName,
+    filters: [{ name: '텍스트 파일', extensions: ['txt'] }]
+  });
+
+  if (result.canceled || !result.filePath) {
+    return { canceled: true };
+  }
+
+  try {
+    // 윈도우 메모장 호환을 위해 UTF-8 BOM을 붙여 저장한다.
+    await fs.writeFile(result.filePath, '﻿' + text, 'utf8');
+    return { canceled: false, path: result.filePath };
+  } catch (error) {
+    errorLogger.logError('pdf_save_failed', error);
+    throw new Error('텍스트 파일을 저장하지 못했습니다.');
+  }
 });
 
 // 렌더러(UI)에서 발생한 오류를 메인 프로세스 로그로 전달받는다.

@@ -886,6 +886,9 @@ textarea {
   font-size: 13.5px;
 }
 
+.run-status.error,
+.editor-status.error { color: var(--danger); font-weight: 600; }
+
 /* =========================================================
    결과
    ========================================================= */
@@ -1225,6 +1228,91 @@ pre {
   margin-top: 14px;
   min-height: 18px;
   font-weight: 600;
+}
+
+/* PDF 추출 탭 — 단일 컬럼, 가운데 정렬 */
+.pdf-workspace.active {
+  display: block;
+}
+
+.pdf-panel {
+  max-width: 920px;
+  margin: 0 auto;
+  display: grid;
+  gap: 18px;
+}
+
+.pdf-intro {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-sm);
+}
+
+.pdf-intro .panel-title { margin: 0 0 8px; }
+
+.pdf-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.pdf-note strong { color: var(--text); }
+
+.pdf-step {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  box-shadow: var(--shadow-sm);
+}
+
+.pdf-step .toggle-row { margin: 6px 0; }
+
+.pdf-file-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.pdf-file-name {
+  color: var(--muted);
+  font-size: 13.5px;
+  word-break: break-all;
+}
+
+.pdf-file-name.has-file {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.pdf-hint {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.pdf-action-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pdf-step .run-status {
+  text-align: left;
+  margin-top: 12px;
+  min-height: 18px;
+  font-weight: 600;
+}
+
+.pdf-result textarea {
+  width: 100%;
+  min-height: 360px;
+  font-size: calc(14px + var(--content-font-delta));
 }
 
 /* 우측: 작업 패널 (넓음) */

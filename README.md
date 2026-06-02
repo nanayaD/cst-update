@@ -20,17 +20,18 @@ The project is small and niche, but it serves a real workflow gap for Korean tab
 
 ## Current Release
 
-- Version: `0.2.0`
-- Release date: `2026-06-01`
+- Version: `0.2.1`
+- Release date: `2026-06-02`
 - Package type: Windows portable executable
-- Download: https://github.com/nanayaD/cst-update/releases/download/v0.2.0/CST-0.2.0-portable.exe
-- Release page: https://github.com/nanayaD/cst-update/releases/tag/v0.2.0
-- SHA256: `8532168FBAABBC65029CFF52E9817AEF38F52925D4A80AC47E4605E7F13F507B`
+- Download: https://github.com/nanayaD/cst-update/releases/download/v0.2.1/CST-0.2.1-portable.exe
+- Release page: https://github.com/nanayaD/cst-update/releases/tag/v0.2.1
+- SHA256: `0780934569C710C2CCE23066E5953B43532BF78E686154A05E98FFFD9D382497`
 
 ## Features
 
 - Translation modes for faithful translation, natural Korean prose, handout-preserving output, and CoC 7e note-focused review.
 - Context editor for sentence cleanup, narration/dialogue splitting, narrator-intrusion removal, and reference term replacement.
+- PDF text extraction (local, no upload) for text-based horizontal-writing scenario PDFs, with optional ruby/furigana merging into parentheses and Japanese inter-character space cleanup, saved to a UTF-8 `.txt` file.
 - Built-in CoC/TRPG terminology data for mythos names, session terms, and sourcebook abbreviations.
 - OpenAI and Gemini provider support with model refresh.
 - In-app Korean user manual with API key setup guidance.

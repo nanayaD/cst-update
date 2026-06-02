@@ -48,30 +48,39 @@ function getSettingsPath() {
   return path.join(app.getPath('userData'), 'settings.json');
 }
 
-// 옛 폴더(coc-jp-scenario-translator) → 새 폴더(CST) 1회 이전. 실패해도 앱 실행을 막지 않는다.
+// 옛 폴더(coc-jp-scenario-translator) → 새 폴더(CST) 1회 이전 후, 옛 폴더를 정리한다.
+// 실패해도 앱 실행을 막지 않는다.
 async function migrateLegacyUserDataIfNeeded() {
   const newDir = app.getPath('userData');
   const oldDir = path.join(app.getPath('appData'), LEGACY_USERDATA_DIR_NAME);
   if (path.resolve(newDir) === path.resolve(oldDir)) return;
 
-  // 새 폴더에 이미 설정이 있으면 건너뛴다(덮어쓰기 방지).
-  try {
-    await fs.access(path.join(newDir, 'settings.json'));
-    return;
-  } catch {}
+  const exists = async (target) => {
+    try {
+      await fs.access(target);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
-  // 옛 폴더에 설정이 없으면 신규 사용자이므로 이전할 게 없다.
-  try {
-    await fs.access(path.join(oldDir, 'settings.json'));
-  } catch {
-    return;
+  // 옛 폴더 자체가 없으면 할 일이 없다(신규 사용자 등).
+  if (!(await exists(oldDir))) return;
+
+  const newHasSettings = await exists(path.join(newDir, 'settings.json'));
+
+  // 새 폴더에 아직 설정이 없으면 옛 폴더에서 1회 복사한다.
+  if (!newHasSettings) {
+    // 옛 폴더에 설정이 없으면 이전할 내용이 없으므로, 섣불리 옛 폴더를 지우지 않고 둔다.
+    if (!(await exists(path.join(oldDir, 'settings.json')))) return;
+
+    // 옛 폴더 내용(settings.json, logs 등)을 새 폴더로 복사. 기존 파일은 건드리지 않는다.
+    await fs.mkdir(newDir, { recursive: true });
+    await fs.cp(oldDir, newDir, { recursive: true, force: false, errorOnExist: false });
   }
 
-  // 옛 폴더 내용(settings.json, logs 등)을 새 폴더로 복사. 기존 파일은 건드리지 않는다.
-  await fs.mkdir(newDir, { recursive: true });
-  await fs.cp(oldDir, newDir, { recursive: true, force: false, errorOnExist: false });
-
-  // 복사가 확실히 성공했는지(새 폴더에 settings.json이 생겼는지) 검증한 뒤에만 옛 폴더를 지운다.
+  // 새 폴더에 정상 설정이 있는 것을 확인한 뒤에만 옛 폴더를 삭제한다.
+  // (이미 CST로 이전을 마친 사용자도 이 경로로 옛 폴더가 정리된다.)
   // 옛 폴더의 settings.json에는 API 키가 평문으로 남으므로, 검증 후 삭제로 사본을 남기지 않는다.
   // 삭제 실패는 치명적이지 않으므로 호출부(try/catch)에서 로그만 남기고 앱은 계속 실행한다.
   await fs.access(path.join(newDir, 'settings.json'));

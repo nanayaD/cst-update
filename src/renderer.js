@@ -78,8 +78,6 @@ const elements = {
   refreshModels: document.querySelector('#refreshModels'),
   modelHint: document.querySelector('#modelHint'),
   charLimit: document.querySelector('#charLimit'),
-  charLimitHelp: document.querySelector('#charLimitHelp'),
-  charLimitHelpText: document.querySelector('#charLimitHelpText'),
   themeSelect: document.querySelector('#themeSelect'),
   fontSizeDown: document.querySelector('#fontSizeDown'),
   fontSizeUp: document.querySelector('#fontSizeUp'),
@@ -237,13 +235,6 @@ function bindEvents() {
   elements.fontSizeDown.addEventListener('click', () => changeContentFontSize(-1));
   elements.fontSizeUp.addEventListener('click', () => changeContentFontSize(1));
   elements.toggleSettings.addEventListener('click', toggleSettingsPanel);
-  if (elements.charLimitHelp && elements.charLimitHelpText) {
-    elements.charLimitHelp.addEventListener('click', () => {
-      const willShow = elements.charLimitHelpText.hidden;
-      elements.charLimitHelpText.hidden = !willShow;
-      elements.charLimitHelp.setAttribute('aria-expanded', String(willShow));
-    });
-  }
   elements.openLogFolder.addEventListener('click', openLogFolder);
   elements.copyLogs.addEventListener('click', copyLogs);
   elements.clearLogs.addEventListener('click', clearLogs);

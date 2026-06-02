@@ -612,17 +612,6 @@ textarea {
   border-color: var(--accent-border);
 }
 
-.field-help {
-  margin-top: 8px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--panel-soft);
-  color: var(--muted);
-  font-size: 12.5px;
-  line-height: 1.55;
-}
-
 .field input:focus,
 .field select:focus,
 textarea:focus {
@@ -1243,8 +1232,14 @@ pre {
   transition: background 140ms ease, color 140ms ease, border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
 }
 
-/* 정리 대상(primary-btn)과 동일한 마우스 오버 모션 */
-.enhance-segment label:hover span {
+/* 선택 안 된 버튼: 형식 정리(secondary-btn)와 동일한 호버 */
+.enhance-segment input:not(:checked) + span:hover {
+  background: var(--accent);
+  border-color: var(--accent-border);
+}
+
+/* 선택된 버튼: 정리 대상(primary-btn)과 동일한 호버(살짝 떠오름) */
+.enhance-segment input:checked + span:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow);
 }

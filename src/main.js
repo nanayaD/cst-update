@@ -70,6 +70,12 @@ async function migrateLegacyUserDataIfNeeded() {
   // 옛 폴더 내용(settings.json, logs 등)을 새 폴더로 복사. 기존 파일은 건드리지 않는다.
   await fs.mkdir(newDir, { recursive: true });
   await fs.cp(oldDir, newDir, { recursive: true, force: false, errorOnExist: false });
+
+  // 복사가 확실히 성공했는지(새 폴더에 settings.json이 생겼는지) 검증한 뒤에만 옛 폴더를 지운다.
+  // 옛 폴더의 settings.json에는 API 키가 평문으로 남으므로, 검증 후 삭제로 사본을 남기지 않는다.
+  // 삭제 실패는 치명적이지 않으므로 호출부(try/catch)에서 로그만 남기고 앱은 계속 실행한다.
+  await fs.access(path.join(newDir, 'settings.json'));
+  await fs.rm(oldDir, { recursive: true, force: true });
 }
 
 async function readSettings() {

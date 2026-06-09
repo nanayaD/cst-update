@@ -43,8 +43,14 @@ const editorRecommendedLabels = {
 
 const modelHints = {
   openai: 'OpenAI Platform에서 만든 API 키를 입력한 뒤 새로고침하면 사용 가능한 모델을 불러옵니다.',
-  gemini: 'Google AI Studio에서 만든 API 키를 입력한 뒤 새로고침하면 generateContent 지원 모델을 불러옵니다.'
+  gemini: 'Google AI Studio에서 만든 API 키를 입력한 뒤 새로고침하면 generateContent 지원 모델을 불러옵니다. 무료 API는 입력/출력 데이터 처리 조건을 확인하세요.'
 };
+
+const GEMINI_NOTICE_ACK_KEY = 'cst_gemini_free_tier_notice_ack_v1';
+const GEMINI_FREE_TIER_NOTICE =
+  'Gemini API는 새 계정이 무료 Free Tier로 시작할 수 있습니다.\n\n' +
+  'Google 안내에 따르면 무료 API 사용 시 입력한 원문과 모델 응답이 Google 제품 개선에 사용될 수 있으며, 일부 내용은 검토 대상이 될 수 있습니다.\n\n' +
+  '비공개 시나리오, 민감한 설정, 개인정보가 들어간 텍스트는 Gemini 유료 티어 또는 OpenAI API처럼 데이터 처리 조건을 확인한 제공사를 사용하는 것을 권장합니다.';
 
 const modeHelp = {
   faithful: {
@@ -122,6 +128,7 @@ const elements = {
   editorTargetDialogue: document.querySelector('#editorTargetDialogue'),
   editorTargetOmit: document.querySelector('#editorTargetOmit'),
   editorApplyTarget: document.querySelector('#editorApplyTarget'),
+  editorClearDraft: document.querySelector('#editorClearDraft'),
   editorCancelBtn: document.querySelector('#editorCancelBtn'),
   editorLinebreak: document.querySelector('#editorLinebreak'),
   editorSendTranslation: document.querySelector('#editorSendTranslation'),
@@ -264,6 +271,7 @@ function bindEvents() {
   elements.clearBtn.addEventListener('click', clearInput);
   elements.copyAll.addEventListener('click', copyAllResults);
   elements.editorApplyTarget.addEventListener('click', applyTargetLocal);
+  if (elements.editorClearDraft) elements.editorClearDraft.addEventListener('click', clearEditorDraft);
   elements.editorCancelBtn.addEventListener('click', cancelEditor);
   elements.editorLinebreak.addEventListener('click', applyLocalLinebreak);
   elements.editorSendTranslation.addEventListener('click', sendTranslationToEditor);
@@ -331,6 +339,7 @@ function confirmOverwrite(message, options = {}) {
   if (pendingConfirm) resolveConfirm(false);
   elements.confirmModalTitle.textContent = options.title || '출력문 바꾸기';
   elements.confirmModalMessage.textContent = message;
+  if (elements.confirmCancel) elements.confirmCancel.textContent = options.cancelText || '취소';
   elements.confirmOk.textContent = options.okText || '바꾸기';
   elements.confirmOk.classList.toggle('danger-btn', Boolean(options.danger));
   elements.confirmModal.hidden = false;
@@ -347,6 +356,7 @@ function resolveConfirm(value) {
   pendingConfirm = null;
   elements.confirmModal.hidden = true;
   elements.confirmOk.textContent = '바꾸기';
+  if (elements.confirmCancel) elements.confirmCancel.textContent = '취소';
   elements.confirmOk.classList.remove('danger-btn');
   if (elements.confirmModalTitle) elements.confirmModalTitle.textContent = '출력문 바꾸기';
   resolve(value);
@@ -484,10 +494,15 @@ function collectSettingsFromForm() {
   };
 }
 
-function onProviderChange() {
+async function onProviderChange() {
   const previous = state.provider;
   const controls = activeApiControls();
   const next = controls.provider.value;
+
+  if (next === 'gemini' && previous !== 'gemini' && !(await confirmGeminiFreeTierNotice())) {
+    controls.provider.value = previous;
+    return;
+  }
 
   // Stash the values currently shown into the provider we are leaving.
   const apiKeys = { ...(state.settings?.apiKeys || {}) };
@@ -503,6 +518,20 @@ function onProviderChange() {
   syncApiControlsFromActive();
   updateModelHint();
   updateCounter();
+}
+
+async function confirmGeminiFreeTierNotice() {
+  if (localStorage.getItem(GEMINI_NOTICE_ACK_KEY) === '1') return true;
+
+  const confirmed = await confirmOverwrite(GEMINI_FREE_TIER_NOTICE, {
+    title: 'Gemini 무료 API 사용 주의',
+    okText: '이해했습니다',
+    cancelText: '돌아가기'
+  });
+  if (confirmed) {
+    localStorage.setItem(GEMINI_NOTICE_ACK_KEY, '1');
+  }
+  return confirmed;
 }
 
 function updateModelHint() {
@@ -1218,6 +1247,25 @@ function saveEditorDraft() {
     enhanceLevel: getEditorEnhanceLevel()
   };
   localStorage.setItem(EDITOR_DRAFT_KEY, JSON.stringify(draft));
+}
+
+async function clearEditorDraft() {
+  const confirmed = await confirmOverwrite(
+    '내 PC에 저장된 문맥교정기 초안을 삭제하고, 현재 교정 원문과 출력문을 비웁니다.',
+    { title: '초안 삭제', okText: '삭제', danger: true }
+  );
+  if (!confirmed) return;
+
+  localStorage.removeItem(EDITOR_DRAFT_KEY);
+  elements.editorSourceText.value = '';
+  elements.editorOutputText.value = '';
+  elements.editorTargetTerms.value = '탐사자님, 탐사자, PC, 플레이어';
+  elements.editorTargetName.value = '당신';
+  elements.editorTargetDialogue.checked = false;
+  elements.editorTargetOmit.checked = true;
+  setEditorEnhanceLevel('off');
+  renderEditorPreview();
+  setEditorStatus('로컬 초안을 삭제했습니다.');
 }
 
 function loadContentFontSize() {

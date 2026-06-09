@@ -1,6 +1,7 @@
 const { app, BrowserWindow, Menu, dialog, ipcMain, shell, clipboard } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs/promises');
+const { pathToFileURL } = require('node:url');
 const translatorService = require('./translatorService');
 const editorService = require('./editorService');
 const errorLogger = require('./errorLogger');
@@ -13,6 +14,12 @@ const { MODES, getProviderLabel } = translatorService;
 // package.json의 name("coc-jp-scenario-translator")으로 떨어지므로, 폴더명을 CST로 고정하려면
 // userData 경로가 처음 해석되기 전(= whenReady 이전, 모듈 로드 시점)에 이름을 지정해야 한다.
 app.setName('CST');
+
+// Windows 작업표시줄이 창을 올바른 앱으로 인식하고 아이콘을 표시하도록 AppUserModelID를 지정한다.
+// (appId와 동일하게 맞춘다.) 창 아이콘 파일(assets/*.ico)은 build.files에 포함되어야 패키징본에서도 로드된다.
+if (process.platform === 'win32') {
+  app.setAppUserModelId('local.coc-jp-scenario-translator');
+}
 
 // 0.2.0까지는 폴더가 'coc-jp-scenario-translator'로 만들어졌다. CST로 바꾸면서 기존 사용자의
 // 저장된 키/설정을 잃지 않도록, 새 폴더가 비어 있고 옛 폴더에 설정이 있으면 1회 복사한다.
@@ -43,6 +50,11 @@ const cancelledPdfRequests = new Set();
 
 let mainWindow = null;
 let pendingMigrationError = null;
+
+function isAllowedAppNavigation(url) {
+  const appUrl = pathToFileURL(path.join(__dirname, 'index.html')).toString();
+  return url === appUrl;
+}
 
 function getSettingsPath() {
   return path.join(app.getPath('userData'), 'settings.json');
@@ -162,7 +174,18 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      sandbox: true
+    }
+  });
+
+  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  mainWindow.webContents.session.setPermissionRequestHandler((_webContents, _permission, callback) => {
+    callback(false);
+  });
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (!isAllowedAppNavigation(url)) {
+      event.preventDefault();
     }
   });
 

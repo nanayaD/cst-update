@@ -54,6 +54,9 @@ CST does not run a project server. API requests are sent directly from the user'
 
 - API keys are stored locally in the app settings file on the user's PC.
 - Source text and translation results are not uploaded to this repository.
+- Context editor drafts are saved locally on the user's PC and can be cleared from the app.
+- When Gemini is selected, the app shows a one-time notice that Gemini Free Tier content may be used by Google for product improvement. Users should confirm the provider's current data handling terms before sending private or sensitive text.
+- OpenAI API translation requests set response storage off where supported by the Responses API.
 - Error logs are local and mask known API key patterns.
 - Release builds should never include `.env` files, logs, user settings, or credentials.
 

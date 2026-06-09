@@ -585,6 +585,70 @@ textarea {
   line-height: 1.5;
 }
 
+/* 라벨 옆 인라인 ? 도움말 버튼. 줄을 가로로 꽉 채워 툴팁을 패널 오른쪽 벽에 붙일 수 있게 한다. */
+.field-label-row { position: relative; display: flex; align-items: center; gap: 6px; }
+
+/* 마우스 오버 시 ? 위쪽으로 떠오르는 테마 적용 안내 팝업. 패널 오른쪽 벽에 붙이고 불투명 배경으로 가독성 확보. */
+.field-tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  width: max-content;
+  max-width: 240px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.55;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: opacity 140ms ease, transform 140ms ease, visibility 140ms;
+  pointer-events: none;
+}
+
+[data-theme="dark"] .field-tip {
+  background: #2a2a36;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.help-inline-btn:hover ~ .field-tip,
+.help-inline-btn:focus-visible ~ .field-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.help-inline-btn {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--panel-soft);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.help-inline-btn:hover {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent-border);
+}
+
 .field input:focus,
 .field select:focus,
 textarea:focus {
@@ -1076,7 +1140,7 @@ pre {
   color: var(--muted);
 }
 
-/* 범례: AI 호출 vs 즉시(로컬) 구분 안내 */
+/* 범례: API 호출 vs 즉시(로컬) 구분 안내 */
 .tools-legend {
   display: grid;
   gap: 8px;
@@ -1100,6 +1164,25 @@ pre {
 
 .legend-swatch.ai { background: var(--accent-grad); }
 .legend-swatch.local { background: var(--button-bg); border: 1px solid var(--line); }
+
+.draft-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--panel-soft);
+}
+
+.draft-tools p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
 
 .tool-section {
   min-width: 0;
@@ -1202,7 +1285,19 @@ pre {
   color: var(--muted);
   font-size: 13px;
   font-weight: 700;
-  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+
+/* 선택 안 된 버튼: 형식 정리(secondary-btn)와 동일한 호버 */
+.enhance-segment input:not(:checked) + span:hover {
+  background: var(--accent);
+  border-color: var(--accent-border);
+}
+
+/* 선택된 버튼: 정리 대상(primary-btn)과 동일한 호버(살짝 떠오름) */
+.enhance-segment input:checked + span:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
 }
 
 .enhance-segment input:checked + span {

@@ -19,6 +19,9 @@ CST asks users to provide their own OpenAI or Gemini API key. The app is designe
 - API keys are not bundled into release executables.
 - Error logs mask known key patterns such as `sk-...`, `AIza...`, `Bearer ...`, and `x-goog-api-key`.
 - Logs are stored locally and are not automatically transmitted.
+- Context editor drafts are stored locally in the app and can be cleared with the in-app draft delete button.
+- Gemini Free Tier may have different data handling terms from paid API usage. CST displays a one-time notice when users select Gemini, and users should avoid sending private or sensitive text unless they have confirmed the provider's current terms.
+- OpenAI Responses API requests are sent with response storage disabled where supported.
 
 ## Release Safety Checklist
 

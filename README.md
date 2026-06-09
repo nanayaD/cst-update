@@ -32,7 +32,6 @@ The project is small and niche, but it serves a real workflow gap for Korean tab
 - Gemini selection shows a one-time Free Tier data-handling notice.
 - OpenAI Responses API requests disable response storage where supported.
 - Context editor drafts can be cleared from inside the app.
-- Internal prompt examples were replaced with generic sample text.
 - User-facing wording now says "provider API request" or "local processing" instead of vague AI wording.
 - Electron and electron-builder were updated, with renderer sandboxing and stricter navigation/window/permission handling.
 

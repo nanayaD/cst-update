@@ -20,12 +20,23 @@ The project is small and niche, but it serves a real workflow gap for Korean tab
 
 ## Current Release
 
-- Version: `0.2.1`
-- Release date: `2026-06-02`
+- Version: `0.2.2`
+- Release date: `2026-06-10`
 - Package type: Windows portable executable
-- Download: https://github.com/nanayaD/cst-update/releases/download/v0.2.1/CST-0.2.1-portable.exe
-- Release page: https://github.com/nanayaD/cst-update/releases/tag/v0.2.1
-- SHA256: `0780934569C710C2CCE23066E5953B43532BF78E686154A05E98FFFD9D382497`
+- Download: https://github.com/nanayaD/cst-update/releases/download/v0.2.2/CST-0.2.2-portable.exe
+- Release page: https://github.com/nanayaD/cst-update/releases/tag/v0.2.2
+- SHA256: `F391B04F61704CEA7875D4001517E43FF7E26DE2C132CADCE8239DD5E1561D7E`
+
+### Highlights In `0.2.2`
+
+- Gemini selection shows a one-time Free Tier data-handling notice.
+- OpenAI Responses API requests disable response storage where supported.
+- Context editor drafts can be cleared from inside the app.
+- Internal prompt examples were replaced with generic sample text.
+- User-facing wording now says "provider API request" or "local processing" instead of vague AI wording.
+- Electron and electron-builder were updated, with renderer sandboxing and stricter navigation/window/permission handling.
+
+Older release notes are archived under [`docs-archive/release-notes`](docs-archive/release-notes).
 
 ## Features
 
@@ -39,6 +50,8 @@ The project is small and niche, but it serves a real workflow gap for Korean tab
 - GitHub-hosted update metadata via `latest.json`.
 
 ## Screenshots
+
+Screenshots are illustrative and may lag slightly behind the latest development UI.
 
 ### Translator
 

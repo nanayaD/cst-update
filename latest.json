@@ -1,14 +1,14 @@
 {
-  "version": "0.2.1",
-  "releaseDate": "2026-06-02",
-  "downloadUrl": "https://github.com/nanayaD/cst-update/releases/download/v0.2.1/CST-0.2.1-portable.exe",
+  "version": "0.2.2",
+  "releaseDate": "2026-06-10",
+  "downloadUrl": "https://github.com/nanayaD/cst-update/releases/download/v0.2.2/CST-0.2.2-portable.exe",
   "packageType": "portable",
   "required": false,
   "notes": [
-    "[추가] 'PDF 추출' 탭이 생겼습니다. 텍스트로 작성된 가로쓰기 시나리오 PDF에서 본문 텍스트를 뽑아 TXT 파일로 저장할 수 있습니다.",
-    "PDF 추출은 루비/후리가나를 괄호로 합치고(예: 探索者(たんさくしゃ)), 일본어 글자 사이 불필요한 공백을 정리하며, 페이지 모양대로 끊긴 줄을 문단으로 합치는 옵션을 제공합니다. 모든 처리는 내 PC에서만 이루어집니다.",
-    "이미지(스캔)로 된 PDF나 세로쓰기 PDF는 추출되지 않거나 순서가 어긋날 수 있습니다.",
-    "설정·로그 폴더 이름을 CST로 정리했습니다 (기존: coc-jp-scenario-translator).",
-    "0.2.0 사용자는 업데이트 후 첫 실행 시 기존 설정·API 키가 자동으로 이전되며, 이전이 끝나면 옛 폴더는 자동으로 삭제됩니다. 키를 다시 입력할 필요가 없습니다."
+    "[개인정보 안내] Gemini 선택 시 무료 API 데이터 처리 조건을 확인하는 안내가 한 번 표시됩니다.",
+    "[로컬 초안] 문맥교정기 교정 원문과 출력문이 내 PC에 초안으로 저장된다는 안내를 추가하고, '초안 삭제' 버튼으로 저장된 초안과 현재 입력칸을 비울 수 있게 했습니다.",
+    "[보안] OpenAI Responses API 요청은 지원되는 범위에서 응답 저장을 끄도록 했습니다.",
+    "[정리] 실제 시나리오에서 가져온 내부 예문을 일반 예문으로 교체하고, 화면/설명서의 표현을 제공사 API 요청과 로컬 처리 중심으로 정리했습니다.",
+    "[안정화] Electron 42.3.3, electron-builder 26.15.2로 업데이트하고 렌더러 샌드박스, 새 창/권한/외부 이동 차단을 보강했습니다."
   ]
 }

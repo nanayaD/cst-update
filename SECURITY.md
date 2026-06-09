@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-The currently supported public release is `v0.2.0`.
+The currently supported public release is `v0.2.2`.
 
 ## Reporting A Vulnerability
 

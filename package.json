@@ -21,8 +21,8 @@
     "build:installer": "electron-builder --win nsis"
   },
   "devDependencies": {
-    "electron": "^32.3.3",
-    "electron-builder": "^25.1.8"
+    "electron": "^42.3.3",
+    "electron-builder": "^26.15.2"
   },
   "build": {
     "appId": "local.coc-jp-scenario-translator",

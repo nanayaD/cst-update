@@ -49,7 +49,8 @@ async function translate({ apiKey, model, instructions, input, temperature, maxO
   const body = {
     model,
     instructions,
-    input
+    input,
+    store: false
   };
 
   if (Number.isFinite(temperature)) {

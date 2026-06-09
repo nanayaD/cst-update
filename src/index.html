@@ -267,6 +267,11 @@
             <span class="legend-item"><span class="legend-swatch local"></span>외곽선 버튼 = 즉시 처리 (로컬, API 미사용)</span>
           </div>
 
+          <section class="draft-tools" aria-label="로컬 초안">
+            <p>교정 원문과 출력문은 내 PC에 초안으로 자동 저장됩니다.</p>
+            <button id="editorClearDraft" class="secondary-btn small danger-btn" type="button">초안 삭제</button>
+          </section>
+
           <section class="tool-section collapse-group">
             <button class="tool-toggle" type="button" aria-expanded="true">
               <div class="tool-section-head">
@@ -302,7 +307,7 @@
             <button class="tool-toggle" type="button" aria-expanded="true">
               <div class="tool-section-head">
                 <h2>② 문장·문맥 정리 (API)</h2>
-                <p class="hint">AI가 문장을 다듬습니다. 정리 방식을 하나 고르세요.</p>
+                <p class="hint">제공사 API로 문장을 다듬습니다. 정리 방식을 하나 고르세요.</p>
               </div>
               <svg class="group-chevron" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
             </button>
@@ -331,7 +336,7 @@
             <button class="tool-toggle" type="button" aria-expanded="true">
               <div class="tool-section-head">
                 <h2>③ 형식 정리 (즉시)</h2>
-                <p class="hint">AI 없이 즉시 처리되는 정리·추출 기능입니다.</p>
+                <p class="hint">API 요청 없이 즉시 처리되는 정리·추출 기능입니다.</p>
               </div>
               <svg class="group-chevron" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
             </button>

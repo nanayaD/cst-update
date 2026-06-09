@@ -1,6 +1,7 @@
 const { app, BrowserWindow, Menu, dialog, ipcMain, shell, clipboard } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs/promises');
+const { pathToFileURL } = require('node:url');
 const translatorService = require('./translatorService');
 const editorService = require('./editorService');
 const errorLogger = require('./errorLogger');
@@ -49,6 +50,11 @@ const cancelledPdfRequests = new Set();
 
 let mainWindow = null;
 let pendingMigrationError = null;
+
+function isAllowedAppNavigation(url) {
+  const appUrl = pathToFileURL(path.join(__dirname, 'index.html')).toString();
+  return url === appUrl;
+}
 
 function getSettingsPath() {
   return path.join(app.getPath('userData'), 'settings.json');
@@ -168,7 +174,18 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      sandbox: true
+    }
+  });
+
+  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  mainWindow.webContents.session.setPermissionRequestHandler((_webContents, _permission, callback) => {
+    callback(false);
+  });
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (!isAllowedAppNavigation(url)) {
+      event.preventDefault();
     }
   });
 

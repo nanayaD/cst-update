@@ -1140,7 +1140,7 @@ pre {
   color: var(--muted);
 }
 
-/* 범례: AI 호출 vs 즉시(로컬) 구분 안내 */
+/* 범례: API 호출 vs 즉시(로컬) 구분 안내 */
 .tools-legend {
   display: grid;
   gap: 8px;
@@ -1164,6 +1164,25 @@ pre {
 
 .legend-swatch.ai { background: var(--accent-grad); }
 .legend-swatch.local { background: var(--button-bg); border: 1px solid var(--line); }
+
+.draft-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--panel-soft);
+}
+
+.draft-tools p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
 
 .tool-section {
   min-width: 0;

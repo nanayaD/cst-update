@@ -18,20 +18,16 @@ CST focuses on that niche workflow:
 
 The project is small and niche, but it serves a real workflow gap for Korean tabletop RPG maintainers, translators, and keepers who prepare scenarios for play.
 
-## Current Status
+## Current Release
 
-The latest public release is still `0.2.1`. The current development branch is preparing `0.2.2`, which focuses on privacy notice wording, local draft controls, provider data-handling clarity, and Electron runtime hardening.
-
-### Latest Public Release
-
-- Version: `0.2.1`
-- Release date: `2026-06-02`
+- Version: `0.2.2`
+- Release date: `2026-06-10`
 - Package type: Windows portable executable
-- Download: https://github.com/nanayaD/cst-update/releases/download/v0.2.1/CST-0.2.1-portable.exe
-- Release page: https://github.com/nanayaD/cst-update/releases/tag/v0.2.1
-- SHA256: `0780934569C710C2CCE23066E5953B43532BF78E686154A05E98FFFD9D382497`
+- Download: https://github.com/nanayaD/cst-update/releases/download/v0.2.2/CST-0.2.2-portable.exe
+- Release page: https://github.com/nanayaD/cst-update/releases/tag/v0.2.2
+- SHA256: `F391B04F61704CEA7875D4001517E43FF7E26DE2C132CADCE8239DD5E1561D7E`
 
-### In Progress For `0.2.2`
+### Highlights In `0.2.2`
 
 - Gemini selection shows a one-time Free Tier data-handling notice.
 - OpenAI Responses API requests disable response storage where supported.

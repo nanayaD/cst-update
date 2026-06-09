@@ -18,7 +18,11 @@ CST focuses on that niche workflow:
 
 The project is small and niche, but it serves a real workflow gap for Korean tabletop RPG maintainers, translators, and keepers who prepare scenarios for play.
 
-## Current Release
+## Current Status
+
+The latest public release is still `0.2.1`. The current development branch is preparing `0.2.2`, which focuses on privacy notice wording, local draft controls, provider data-handling clarity, and Electron runtime hardening.
+
+### Latest Public Release
 
 - Version: `0.2.1`
 - Release date: `2026-06-02`
@@ -26,6 +30,15 @@ The project is small and niche, but it serves a real workflow gap for Korean tab
 - Download: https://github.com/nanayaD/cst-update/releases/download/v0.2.1/CST-0.2.1-portable.exe
 - Release page: https://github.com/nanayaD/cst-update/releases/tag/v0.2.1
 - SHA256: `0780934569C710C2CCE23066E5953B43532BF78E686154A05E98FFFD9D382497`
+
+### In Progress For `0.2.2`
+
+- Gemini selection shows a one-time Free Tier data-handling notice.
+- OpenAI Responses API requests disable response storage where supported.
+- Context editor drafts can be cleared from inside the app.
+- Internal prompt examples were replaced with generic sample text.
+- User-facing wording now says "provider API request" or "local processing" instead of vague AI wording.
+- Electron and electron-builder were updated, with renderer sandboxing and stricter navigation/window/permission handling.
 
 ## Features
 
@@ -39,6 +52,8 @@ The project is small and niche, but it serves a real workflow gap for Korean tab
 - GitHub-hosted update metadata via `latest.json`.
 
 ## Screenshots
+
+Screenshots are illustrative and may lag slightly behind the latest development UI.
 
 ### Translator
 

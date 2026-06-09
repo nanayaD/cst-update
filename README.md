@@ -40,6 +40,8 @@ The latest public release is still `0.2.1`. The current development branch is pr
 - User-facing wording now says "provider API request" or "local processing" instead of vague AI wording.
 - Electron and electron-builder were updated, with renderer sandboxing and stricter navigation/window/permission handling.
 
+Older release notes are archived under [`docs-archive/release-notes`](docs-archive/release-notes).
+
 ## Features
 
 - Translation modes for faithful translation, natural Korean prose, handout-preserving output, and CoC 7e note-focused review.
